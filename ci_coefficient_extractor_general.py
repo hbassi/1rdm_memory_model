@@ -8,7 +8,8 @@ parser = argparse.ArgumentParser(prog='ci_coefficient_extractor',
 
 parser.add_argument('--mol', required=True, help='molecule')
 parser.add_argument('--basis', required=True, help='basis')
-parser.add_argument('--path', required=False, help='custom path to log files')
+parser.add_argument('--inpath', required=False, help='custom path to log files (inputs) that will be loaded')
+parser.add_argument('--outpath', required=False, help='custom path to .npy files (outputs) that will be saved')
 
 # actually parse command-line arguments
 args = parser.parse_args()
@@ -17,10 +18,16 @@ mol = args.mol
 basis = args.basis
 
 # set path to log files
-if args.path:
-    path = args.path
+if args.inpath:
+    path = args.inpath
 else:
     path = './logfiles/'
+
+# set path to outputs
+if args.outpath:
+    outpath = args.outpath
+else:
+    outpath = './'
 
 # construct prefix used to load and save files
 if basis=='sto-3g':
@@ -86,8 +93,8 @@ print(hamiltonian.shape)
 
 print(final_coefficients)
 print(hamiltonian)
-coeff_fname = ident + '_ci_coefficients.npy'
+coeff_fname = outpath + ident + '_ci_coefficients.npy'
 np.save(coeff_fname, final_coefficients)
-ham_fname = ident + '_hamiltonian.npy'
+ham_fname = outpath + ident + '_hamiltonian.npy'
 np.save(ham_fname, hamiltonian)
 
