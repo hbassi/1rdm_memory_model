@@ -1,10 +1,15 @@
 import re
 import numpy as np
 
-#f = open('./logfiles/casscf24_s15_heh+_6-31g.log','r')
-#f = open('./logfiles/casscf22_s2_heh+_sto-3g.log','r')
-#f = open('./logfiles/casscf22_s2_h2_sto-3g.log','r')
-f = open('./logfiles/casscf24_s15_h2_6-31g.log','r')
+mol = 'heh+'
+basis = 'sto-3g'
+
+if basis=='sto-3g':
+    prefix='casscf22_s2_'
+if basis=='6-31g':
+    prefix='casscf24_s15_'
+
+f = open('./logfiles/'+prefix+mol+'_'+basis+'.log','r')
 def products():
     extract = False
     eigenvalues = False
@@ -20,7 +25,8 @@ def products():
                 # want to move to next line
                 continue
             if eigenvalues:
-                strlist = re.findall("-?\d+\.\d+", x)
+                strlist = re.findall(r"-?\d+\.\d+", x)
+                print(strlist)
                 # stop parsing if there are no floats in the line
                 if strlist == []:
                     eigenvalues = False
@@ -47,9 +53,10 @@ def products():
     MOs = np.hstack(chunks).T
 
     #read states in from file under 'SLATER DETERMINANT BASIS'
-    #states = ['10','ba','ab','01']
-    states = ['1000','ba00','ab00','b0a0','0100','a0b0','b00a','0ba0','0ab0','a00b','0b0a','0010','0a0b','00ba','00ab','0001']
-
+    if basis=='sto-3g':
+        states = ['10','ba','ab','01']
+    if basis=='6-31':
+        states = ['1000','ba00','ab00','b0a0','0100','a0b0','b00a','0ba0','0ab0','a00b','0b0a','0010','0a0b','00ba','00ab','0001']
 
     def process(state):
         # check if we have a doubly occupied orbital
@@ -110,9 +117,10 @@ def products():
 
     #ci_coeffs = np.load('casscf24_s15_h2_6-31g_ci_coefficients.npz').T
     #ci_coeffs = np.load('casscf24_s15_heh+_6-31g_ci_coefficients.npz').T
-    ci_coeffs = np.load('casscf22_s2_heh+_sto-3g_ci_coefficients.npz').T
+    #ci_coeffs = np.load('casscf22_s2_heh+_sto-3g_ci_coefficients.npz').T
+    ci_coeffs = np.load(prefix+mol+'_'+basis+'_ci_coefficients.npz').T
     mapping_ci_coeffs = {}
-    import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
     ctr = 0
     for key in states:
         mapping_ci_coeffs[key] = ci_coeffs[ctr]
@@ -138,6 +146,6 @@ def products():
 
 if __name__ == '__main__':
     tens = products()
-    # with open('casscf24_s15_h2_6-31g_tensor.npz', 'wb') as f:
-    #     np.save(f,tens)
+    with open(prefix+mol+'_'+basis+'_tensor.npz', 'wb') as f:
+        np.save(f,tens)
     

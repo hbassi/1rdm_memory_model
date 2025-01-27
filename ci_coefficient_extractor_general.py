@@ -1,8 +1,43 @@
 import re
 import numpy as np
-#f = open('./logfiles/casscf24_s15_heh+_6-31g.log','r')
-#f = open('./logfiles/casscf22_s2_heh+_sto-3g.log','r')
-f = open('./logfiles/casscf24_s15_h2_6-31g.log','r')
+import argparse
+import sys
+
+parser = argparse.ArgumentParser(prog='ci_coefficient_extractor',
+                                 description='extract CI coefficients and Hamiltonian from log file')
+
+parser.add_argument('--mol', required=True, help='molecule')
+parser.add_argument('--basis', required=True, help='basis')
+parser.add_argument('--path', required=False, help='custom path to log files')
+
+# actually parse command-line arguments
+args = parser.parse_args()
+
+mol = args.mol
+basis = args.basis
+
+# set path to log files
+if args.path:
+    path = args.path
+else:
+    path = './logfiles/'
+
+# construct prefix used to load and save files
+if basis=='sto-3g':
+    prefix='casscf22_s2_'
+elif basis=='6-31g':
+    prefix='casscf24_s15_'
+else:
+    print("Error: basis set not recognized! Must choose either sto-3g or 6-31g")
+    sys.exit(1)
+
+# check if molecule is represented
+if mol!='heh+' and mol!='h2':
+    print("Error: molecule not recognized! Must choose either heh+ or h2")
+    sys.exit(1)
+
+ident = prefix+mol+'_'+basis
+f = open(path+ident+'.log','r')
 extract = False
 eigenvalues = False
 keepcounting = True
@@ -51,9 +86,8 @@ print(hamiltonian.shape)
 
 print(final_coefficients)
 print(hamiltonian)
-with open('casscf24_s15_h2_6-31g_ci_coefficients.npz', 'wb') as f:
-    np.save(f, final_coefficients)
-f.close()
-with open('casscf24_s15_h2_6-31g_hamiltonian.npz', 'wb') as f:
-    np.save(f, hamiltonian)
-f.close()
+coeff_fname = ident + '_ci_coefficients.npy'
+np.save(coeff_fname, final_coefficients)
+ham_fname = ident + '_hamiltonian.npy'
+np.save(ham_fname, hamiltonian)
+
