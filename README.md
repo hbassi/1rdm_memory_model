@@ -2,7 +2,7 @@
 
 
 ## Extracting CI coefficients from the logfiles
-Begin by running `ci_coefficient_extractor_general.py` with the appropriate logfile for whichever molecular system ($HeH+$ or $H_2$) in whichever basis (STO-3G or 6-31G). This will save the core Hamiltonian $H_0$ and the CI coefficients needed to assemble $\widetilde{B}$.
+Begin by running `ci_coefficient_extractor_general.py` with the appropriate logfile for whichever molecular system ($HeH^{+}$ or $H_2$) in whichever basis (STO-3G or 6-31G). This will save the core Hamiltonian $H_0$ and the CI coefficients needed to assemble $\widetilde{B}$.
 
 ## Assembling $\widetilde{B}$
 After running and saving the CI coefficients and core Hamiltonian from  `ci_coefficient_extractor_general.py`, open `products.py`. For whichever molecular system and basis you are in, change the appropriate ```logfile``` parameter at the top of the script. Subsequently, if you are in STO-3G, uncomment line 50. If you are in 6-31G, leave line 51 uncommented. These represent all possible states for the system. In lines 111 - 113, uncomment the appropriate CI coefficients for the molecular system that you are in (CI coefficients are saved to disk from `ci_coefficient_extractor_general.py`). Running the script will then generate and save $\widetilde{B}$.
