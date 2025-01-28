@@ -1,21 +1,57 @@
 import re
 import numpy as np
+import argparse
+import sys
 
-mol = 'heh+'
-basis = 'sto-3g'
+parser = argparse.ArgumentParser(prog='compute_btensor',
+                                 description='compute the 4-index tensor that computes 1RDMs from full density matrices')
 
+parser.add_argument('--mol', required=True, help='molecule')
+parser.add_argument('--basis', required=True, help='basis')
+parser.add_argument('--inpath', required=False, help='custom path to log files and CI coeffs (inputs) that will be loaded')
+parser.add_argument('--outpath', required=False, help='custom path to .npy files (outputs) that will be saved')
+
+# actually parse command-line arguments
+args = parser.parse_args()
+
+mol = args.mol
+basis = args.basis
+
+# set path to log files
+if args.inpath:
+    path = args.inpath
+else:
+    path = './logfiles/'
+
+# set path to outputs
+if args.outpath:
+    outpath = args.outpath
+else:
+    outpath = path
+
+# construct prefix used to load and save files
 if basis=='sto-3g':
     prefix='casscf22_s2_'
-if basis=='6-31g':
+elif basis=='6-31g':
     prefix='casscf24_s15_'
+else:
+    print("Error: basis set not recognized! Must choose either sto-3g or 6-31g")
+    sys.exit(1)
 
-f = open('./logfiles/'+prefix+mol+'_'+basis+'.log','r')
-def products():
+# check if molecule is represented
+if mol!='heh+' and mol!='h2':
+    print("Error: molecule not recognized! Must choose either heh+ or h2")
+    sys.exit(1)
+
+ident = prefix+mol+'_'+basis
+
+def compute_btensor():
     extract = False
     eigenvalues = False
     keepcounting = True
     rownumber = 0
     rows = []
+    f = open(path+ident+'.log','r')
     for x in f:
         if "Molecular Orbital Coefficient" in x:
             extract = True
@@ -38,9 +74,8 @@ def products():
 
         if "Alpha Density Matrix" in x:
             extract = False
-
-    #print(rows)
-    #print(rownumber)
+    
+    f.close()
 
     # process the list of row vectors that we extracted
     chunks = []
@@ -55,7 +90,7 @@ def products():
     #read states in from file under 'SLATER DETERMINANT BASIS'
     if basis=='sto-3g':
         states = ['10','ba','ab','01']
-    if basis=='6-31':
+    if basis=='6-31g':
         states = ['1000','ba00','ab00','b0a0','0100','a0b0','b00a','0ba0','0ab0','a00b','0b0a','0010','0a0b','00ba','00ab','0001']
 
     def process(state):
@@ -67,6 +102,7 @@ def products():
             loc1 = state.index('a')
             loc2 = state.index('b')
             return loc1+1, loc2+1
+    
     products = {}
     # compute all reduced 1-electron integrals of all products of states
     numstates = len(states)
@@ -113,20 +149,13 @@ def products():
                 final_products[key] = scaling * 0.5*(MOs[int_values[0]-1].reshape((MOs.shape[0],1)) @ MOs[int_values[1]-1].reshape((MOs.shape[0],1)).T)
     #print(final_products)
 
-
-
-    #ci_coeffs = np.load('casscf24_s15_h2_6-31g_ci_coefficients.npz').T
-    #ci_coeffs = np.load('casscf24_s15_heh+_6-31g_ci_coefficients.npz').T
-    #ci_coeffs = np.load('casscf22_s2_heh+_sto-3g_ci_coefficients.npz').T
-    ci_coeffs = np.load(prefix+mol+'_'+basis+'_ci_coefficients.npz').T
+    ci_coeffs = np.load(path+ident+'_ci_coefficients.npy').T
     mapping_ci_coeffs = {}
-    # import pdb;pdb.set_trace()
     ctr = 0
     for key in states:
         mapping_ci_coeffs[key] = ci_coeffs[ctr]
         ctr += 1
-
-
+    
     tens = np.zeros([ci_coeffs.shape[0],ci_coeffs.shape[1],MOs.shape[0],MOs.shape[1]])
 
     for i in range(0,len(states)):
@@ -145,7 +174,7 @@ def products():
     return tens
 
 if __name__ == '__main__':
-    tens = products()
-    with open(prefix+mol+'_'+basis+'_tensor.npz', 'wb') as f:
-        np.save(f,tens)
+    tens = compute_btensor()
+    np.save(outpath+ident+'_tensor.npy', tens)
+
     

@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 import sys
 
-parser = argparse.ArgumentParser(prog='ci_coefficient_extractor',
+parser = argparse.ArgumentParser(prog='extract_ci_info',
                                  description='extract CI coefficients and Hamiltonian from log file')
 
 parser.add_argument('--mol', required=True, help='molecule')
@@ -27,7 +27,7 @@ else:
 if args.outpath:
     outpath = args.outpath
 else:
-    outpath = './'
+    outpath = path
 
 # construct prefix used to load and save files
 if basis=='sto-3g':
@@ -45,6 +45,7 @@ if mol!='heh+' and mol!='h2':
 
 ident = prefix+mol+'_'+basis
 f = open(path+ident+'.log','r')
+
 extract = False
 eigenvalues = False
 keepcounting = True
