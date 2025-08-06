@@ -76,7 +76,7 @@ def compute_btensor():
             extract = False
     
     f.close()
-
+    
     # process the list of row vectors that we extracted
     chunks = []
     numchunks = len(rows)//rownumber
@@ -84,15 +84,15 @@ def compute_btensor():
         si = c*rownumber
         ei = (c+1)*rownumber
         chunks.append( np.array(rows[si:ei]) )
-
+    
     MOs = np.hstack(chunks).T
-
+    
     #read states in from file under 'SLATER DETERMINANT BASIS'
     if basis=='sto-3g':
         states = ['10','ba','ab','01']
     if basis=='6-31g':
         states = ['1000','ba00','ab00','b0a0','0100','a0b0','b00a','0ba0','0ab0','a00b','0b0a','0010','0a0b','00ba','00ab','0001']
-
+    
     def process(state):
         # check if we have a doubly occupied orbital
         if '1' in state:
