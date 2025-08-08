@@ -126,7 +126,11 @@ def compute_btensor():
                     symb_op_2 = "-|" + str(j1) + " >< " + str(j2) + "|"
             products[outer_product] = symb_op_1 + symb_op_2
             #print("\n")
-    #print(products)  
+    
+    for key in list(products.keys()):
+        print([key, products[key]])
+    print("\n")
+    
     final_products = {}
 
     for key in list(products.keys()):
