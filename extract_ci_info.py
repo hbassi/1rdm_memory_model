@@ -30,17 +30,15 @@ else:
     outpath = path
 
 # construct prefix used to load and save files
-if basis=='sto-3g':
-    prefix='casscf22_s2_'
-elif basis=='6-31g':
-    prefix='casscf24_s15_'
+if mol=='heh+' or mol=='h2':
+    if basis=='sto-3g':
+        prefix='casscf22_s2_'
+    elif basis=='6-31g':
+        prefix='casscf24_s15_'
+elif mol=='lih' and basis=='sto-3g':
+    prefix='casscf46_s225_'
 else:
-    print("Error: basis set not recognized! Must choose either sto-3g or 6-31g")
-    sys.exit(1)
-
-# check if molecule is represented
-if mol!='heh+' and mol!='h2':
-    print("Error: molecule not recognized! Must choose either heh+ or h2")
+    print("Error: molecular system not recognized!")
     sys.exit(1)
 
 ident = prefix+mol+'_'+basis
