@@ -1,0 +1,39 @@
+molecule hehp {
+1 1
+H  0.       0.      -0.386
+He 0.       0.       0.386
+}
+
+set {
+    reference rhf
+    basis 6-31g
+    ex_level 1
+    calc_s_squared true
+    num_roots 7
+    diag_method rsp
+    print 2
+    dipmom true
+    opdm true
+    tdm true
+}
+
+thisenergy, ciwfn = prop('detci', properties=['DIPOLE', 'TRANSITION_DIPOLE'], return_wfn=True)
+
+for i in range(7):
+    for j in range(i+1):
+        ciop_dm = ciwfn.get_opdm(i,j,'SUM',True)
+        ciop_dm.print_out()
+
+mints = MintsHelper(ciwfn.basisset())
+
+AOdip = mints.ao_dipole()
+AOdip[0].print_out()
+AOdip[1].print_out()
+AOdip[2].print_out()
+
+ciwfn.Ca().print_out()               # Print orbital information
+
+
+
+
+

@@ -1,0 +1,43 @@
+memory 10 gb
+
+molecule lih {
+H  0.       0.      -0.765
+Li 0.       0.       0.765
+symmetry c1
+no_com
+no_reorient
+}
+
+set {
+    reference rhf
+    basis sto-3g
+    ms0 false
+    fci true
+    diag_method rsp
+    num_roots 225
+    num_dets_print 225
+    print 2
+    dipmom true
+    opdm true
+    tdm true
+}
+
+thisenergy, ciwfn = prop('detci', properties=['DIPOLE', 'TRANSITION_DIPOLE'], return_wfn=True)
+
+for i in range(225):
+    for j in range(i+1):
+        ciop_dm = ciwfn.get_opdm(i,j,'SUM',True)
+        ciop_dm.print_out()
+
+mints = MintsHelper(ciwfn.basisset())
+
+AOdip = mints.ao_dipole()
+AOdip[0].print_out()
+AOdip[1].print_out()
+AOdip[2].print_out()
+
+ciwfn.Ca().print_out()               # Print orbital information
+
+
+
+
