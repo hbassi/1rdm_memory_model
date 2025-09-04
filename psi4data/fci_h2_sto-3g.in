@@ -35,7 +35,27 @@ AOdip[0].print_out()
 AOdip[1].print_out()
 AOdip[2].print_out()
 
-ciwfn.Ca().print_out()               # Print orbital information
+# MO coefficients
+ciwfn.Ca().print_out()
+C = ciwfn.Ca().to_array()
+
+AOdipmat = AOdip[2].to_array()
+
+# initialize CI dipole moment matrix in z direction
+CIdimatz = np.zeros((4,4))
+for i in range(4):
+    for j in range(4):
+        ciop_dm = ciwfn.get_opdm(i,j,'SUM',True)
+        # density matrix: change basis from MO to AO
+        dmAO = C @ ciop_dm.to_array() @ C.T
+        # compute this particular density matrix element
+        CIdimatz[i, j] = np.trace( dmAO @ AOdipmat )
+
+print(np.round(CIdimatz, 8))
+
+CIdimatfile = np.load('../logfiles/casscf22_s2_h2_sto-3g_CI_dimat.npz')
+print(CIdimatfile)
+
 
 
 

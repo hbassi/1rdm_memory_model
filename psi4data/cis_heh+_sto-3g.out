@@ -31,10 +31,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Sunday, 17 August 2025 07:10PM
+    Psi4 started on: Thursday, 04 September 2025 09:40AM
 
-    Process ID: 1446870
-    Host:       gnode010.cluster
+    Process ID: 3455577
+    Host:       node046.cluster
     PSIDATADIR: /home/hbhat/psi4conda/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -42,16 +42,22 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
+memory 1 gb
+
 molecule hehp {
 1 1
 H  0.       0.      -0.386
 He 0.       0.       0.386
+symmetry c1
+no_com
+no_reorient
 }
 
 set {
     reference rhf
     basis sto-3g
-    calc_s_squared true
+    ms0 false
+    ex_allow [1, 0]
     num_roots 3
     diag_method rsp
     print 2
@@ -60,8 +66,9 @@ set {
     tdm true
 }
 
-thisenergy, ciwfn = prop('detci', properties=['DIPOLE', 'TRANSITION_DIPOLE'], return_wfn=True)
+thisenergy, ciwfn = prop('cisd', properties=['DIPOLE', 'TRANSITION_DIPOLE'], return_wfn=True)
 
+"""
 for i in range(3):
     for j in range(i+1):
         ciop_dm = ciwfn.get_opdm(i,j,'SUM',True)
@@ -75,12 +82,14 @@ AOdip[1].print_out()
 AOdip[2].print_out()
 
 ciwfn.Ca().print_out()               # Print orbital information
-
+"""
 
 
 
 
 --------------------------------------------------------------------------
+
+  Memory set to 953.674 MiB by Python driver.
    => Libint2 <=
 
     Primary   basis highest AM E, G, H:  6, 6, 3
@@ -88,8 +97,8 @@ ciwfn.Ca().print_out()               # Print orbital information
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on gnode010.cluster
-*** at Sun Aug 17 19:10:43 2025
+*** tstart() called on node046.cluster
+*** at Thu Sep  4 09:40:58 2025
 
    => Loading Basis Set <=
 
@@ -105,25 +114,25 @@ ciwfn.Ca().print_out()               # Print orbital information
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        1 Threads,    500 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
 
-    Molecular point group: c2v
+    Molecular point group: c1
     Full point group: C_inf_v
 
     Geometry (in Angstrom), charge = 1, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         H            0.000000000000     0.000000000000    -0.616715684885     1.007825032230
-         HE           0.000000000000     0.000000000000     0.155284315115     4.002603254130
+         H            0.000000000000     0.000000000000    -0.386000000000     1.007825032230
+         HE           0.000000000000     0.000000000000     0.386000000000     4.002603254130
 
-  Running in c2v symmetry.
+  Running in c1 symmetry.
 
-  Rotational constants: A = ************  B =     35.13250  C =     35.13250 [cm^-1]
-  Rotational constants: A = ************  B = 1053245.86783  C = 1053245.86783 [MHz]
+  Rotational constants: A = ************  B =     22.58120  C =     22.58120 [cm^-1]
+  Rotational constants: A = ************  B = 676967.37530  C = 676967.37530 [MHz]
   Nuclear repulsion =    1.370925416243523
 
   Charge       = 1
@@ -184,7 +193,7 @@ ciwfn.Ca().print_out()               # Print orbital information
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory [MiB]:              375
+    Memory [MiB]:              715
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -200,10 +209,7 @@ ciwfn.Ca().print_out()               # Print orbital information
    -------------------------
     Irrep   Nso     Nmo    
    -------------------------
-     A1         2       2 
-     A2         0       0 
-     B1         0       0 
-     B2         0       0 
+     A          2       2 
    -------------------------
     Total       2       2
    -------------------------
@@ -213,12 +219,12 @@ ciwfn.Ca().print_out()               # Print orbital information
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter SAD:    -3.35655226226348   -3.35655e+00   0.00000e+00 
-   @RHF iter   1:    -2.83926325562804    5.17289e-01   2.58643e-02 DIIS/ADIIS
-   @RHF iter   2:    -2.84133659535437   -2.07334e-03   3.77667e-03 DIIS/ADIIS
-   @RHF iter   3:    -2.84138245551495   -4.58602e-05   1.03240e-04 DIIS/ADIIS
+   @RHF iter   1:    -2.83926325562804    5.17289e-01   2.58643e-02 ADIIS/DIIS
+   @RHF iter   2:    -2.84133659535437   -2.07334e-03   3.77667e-03 ADIIS/DIIS
+   @RHF iter   3:    -2.84138245551495   -4.58602e-05   1.03240e-04 ADIIS/DIIS
    @RHF iter   4:    -2.84138248990657   -3.43916e-08   4.35666e-07 DIIS
    @RHF iter   5:    -2.84138248990718   -6.11511e-13   1.06691e-09 DIIS
-   @RHF iter   6:    -2.84138248990718    4.44089e-16   1.95302e-12 DIIS
+   @RHF iter   6:    -2.84138248990719   -1.33227e-15   1.95283e-12 DIIS
   Energy and wave function converged.
 
 
@@ -229,26 +235,26 @@ ciwfn.Ca().print_out()               # Print orbital information
 
     Doubly Occupied:                                                      
 
-       1A1    -1.634579  
+       1A     -1.634579  
 
     Virtual:                                                              
 
-       2A1    -0.170793  
+       2A     -0.170793  
 
     Final Occupation by Irrep:
-             A1    A2    B1    B2 
-    DOCC [     1,    0,    0,    0 ]
-    NA   [     1,    0,    0,    0 ]
-    NB   [     1,    0,    0,    0 ]
+              A 
+    DOCC [     1 ]
+    NA   [     1 ]
+    NB   [     1 ]
 
-  @RHF Final Energy:    -2.84138248990718
+  @RHF Final Energy:    -2.84138248990719
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              1.3709254162435234
-    One-Electron Energy =                  -5.1554580380782484
-    Two-Electron Energy =                   0.9431501319275404
-    Total Energy =                         -2.8413824899071844
+    One-Electron Energy =                  -5.1554580380782511
+    Two-Electron Energy =                   0.9431501319275413
+    Total Energy =                         -2.8413824899071862
 
 Computation Completed
 
@@ -267,20 +273,20 @@ Properties computed using the SCF density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.2405882           -0.5785341           -0.8191223
- Magnitude           :                                                    0.8191223
+ Dipole Z            :         -1.1125671            0.7294343           -0.3831328
+ Magnitude           :                                                    0.3831328
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on gnode010.cluster at Sun Aug 17 19:10:43 2025
+*** tstop() called on node046.cluster at Thu Sep  4 09:40:59 2025
 Module time:
 	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
 	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -293,9 +299,9 @@ Total time:
       Number of atomic orbitals:         2
       Number of basis functions:         2
 
-      Number of irreps:                  4
+      Number of irreps:                  1
       Integral cutoff                 1.00e-12
-      Number of functions per irrep: [   2    0    0    0 ]
+      Number of functions per irrep: [   2 ]
 
  OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
          stored in file 35.
@@ -328,13 +334,13 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
     R4S            =       NO      REPL OTF      =       NO
     DIAG METHOD    =      RSP      FOLLOW ROOT   =        0
     PRECONDITIONER = DAVIDSON      UPDATE        = OLSEN
-    S              =   0.0000      Ms0           =      YES
+    S              =   0.0000      Ms0           =       NO
     GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
     COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
     MAX NUM VECS   =        0      REF SYM       =     AUTO
     IOPEN        =       NO
 
-    EX ALLOW       =  1  1 
+    EX ALLOW       =  1  0 
     STATE AVERAGE  =  0(1.00) 
 
    ==> CI Orbital and Space information <==
@@ -349,30 +355,30 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
     B RAS1 MAX    =        1      B RAS34 MAX   =        1
     RAS3 LVL      =        1      RAS34 MAX     =        2
     RAS3 MAX      =        2
-   ------------------------------------------------------
-               Space    Total    A1    A2    B1    B2
-   ------------------------------------------------------
-                 Nso        2     2     0     0     0
-                 Nmo        2     2     0     0     0
-               Ndocc        1     1     0     0     0
-               Nsocc        0     0     0     0     0
-   ------------------------------------------------------
-                       CI Spaces
-   ------------------------------------------------------
-        Dropped DOCC        0     0     0     0     0
-                RAS1        1     1     0     0     0
-                RAS2        0     0     0     0     0
-                RAS3        1     1     0     0     0
-                RAS4        0     0     0     0     0
-      Active (total)        2     2     0     0     0
-        Dropped UOCC        0     0     0     0     0
-   ------------------------------------------------------
+   ------------------------------------
+               Space    Total     A
+   ------------------------------------
+                 Nso        2     2
+                 Nmo        2     2
+               Ndocc        1     1
+               Nsocc        0     0
+   ------------------------------------
+              CI Spaces
+   ------------------------------------
+        Dropped DOCC        0     0
+                RAS1        1     1
+                RAS2        0     0
+                RAS3        1     1
+                RAS4        0     0
+      Active (total)        2     2
+        Dropped UOCC        0     0
+   ------------------------------------
 
    ==> Setting up CI strings <==
 
     There are 2 alpha and 2 beta strings
-    The CI space requires 4 (4.00E+00) determinants and 4 blocks
-    Total H0block size (including coupling): 4
+    The CI space requires 3 (3.00E+00) determinants and 3 blocks
+    Total H0block size (including coupling): 3
 
    ==> Transforming CI integrals <==
 
@@ -380,41 +386,17 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Constructing frozen core operators
 	Starting first half-transformation.
-	h = 0; memfree         = 65535992
+	h = 0; memfree         = 124999992
 	h = 0; rows_per_bucket = 3
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 65535992
-	h = 1; rows_per_bucket = 0
-	h = 1; rows_left       = 0
-	h = 1; nbuckets        = 0
-	h = 2; memfree         = 65535992
-	h = 2; rows_per_bucket = 0
-	h = 2; rows_left       = 0
-	h = 2; nbuckets        = 0
-	h = 3; memfree         = 65535992
-	h = 3; rows_per_bucket = 0
-	h = 3; rows_left       = 0
-	h = 3; nbuckets        = 0
 	Sorting half-transformed integrals.
 	First half integral transformation complete.
 	Starting second half-transformation.
-	h = 0; memfree         = 65535992
+	h = 0; memfree         = 124999992
 	h = 0; rows_per_bucket = 3
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 65535992
-	h = 1; rows_per_bucket = 0
-	h = 1; rows_left       = 0
-	h = 1; nbuckets        = 0
-	h = 2; memfree         = 65535992
-	h = 2; rows_per_bucket = 0
-	h = 2; rows_left       = 0
-	h = 2; nbuckets        = 0
-	h = 3; memfree         = 65535992
-	h = 3; rows_per_bucket = 0
-	h = 3; rows_left       = 0
-	h = 3; nbuckets        = 0
 	Two-electron integral transformation complete.
 
    ==> Starting CI iterations <==
@@ -423,41 +405,36 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
 
    ==> Energetics <==
 
-    SCF energy =           -2.841382489907184
-    Total CI energy =      -2.851024030048660
+    SCF energy =           -2.841382489907186
+    Total CI energy =      -2.841382489907186
 
-   ==> DETCI root 0 information <==
+   ==> CISD root 0 information <==
 
-    DETCI Root 0 energy =    -2.851024030048660
+    CISD Root 0 energy =    -2.841382489907186
 
-   The 4 most important determinants:
+   The 3 most important determinants:
 
-    *   1    0.997658  (    0,    0)  1A1X 
-    *   2   -0.066047  (    1,    1)  2A1X 
-    *   3    0.012560  (    0,    1)  1A1A 2A1B 
-    *   4    0.012560  (    1,    0)  1A1B 2A1A 
+    *   1   -1.000000  (    0,    0)  1AX 
 
 
-   ==> DETCI root 1 information <==
+   ==> CISD root 1 information <==
 
-    DETCI Root 1 energy =    -2.038741247458641
+    CISD Root 1 energy =    -2.038741247458642
 
-   The 4 most important determinants:
+   The 3 most important determinants:
 
-    *   1    0.707107  (    1,    0)  1A1B 2A1A 
-    *   2   -0.707107  (    0,    1)  1A1A 2A1B 
+    *   1   -0.707107  (    1,    0)  1AB 2AA 
+    *   2    0.707107  (    0,    1)  1AA 2AB 
 
 
-   ==> DETCI root 2 information <==
+   ==> CISD root 2 information <==
 
-    DETCI Root 2 energy =    -1.817019498247151
+    CISD Root 2 energy =    -1.747466648244127
 
-   The 4 most important determinants:
+   The 3 most important determinants:
 
-    *   1   -0.688092  (    0,    1)  1A1A 2A1B 
-    *   2   -0.688092  (    1,    0)  1A1B 2A1A 
-    *   3    0.228052  (    1,    1)  2A1X 
-    *   4    0.032423  (    0,    0)  1A1X 
+    *   1    0.707107  (    0,    1)  1AA 2AB 
+    *   2    0.707107  (    1,    0)  1AB 2AA 
 
 		 "A good bug is a dead bug" 
 
@@ -470,7 +447,7 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
-Properties computed using the DETCI density matrix
+Properties computed using the CISD density matrix
 
 
  Multipole Moments:
@@ -482,8 +459,8 @@ Properties computed using the DETCI density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.2004652           -0.5785341           -0.7789993
- Magnitude           :                                                    0.7789993
+ Dipole Z            :         -1.1125671            0.7294343           -0.3831328
+ Magnitude           :                                                    0.3831328
 
  ------------------------------------------------------------------------------------
 
@@ -502,8 +479,8 @@ Properties computed using the CI density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.2004652           -0.5785341           -0.7789993
- Magnitude           :                                                    0.7789993
+ Dipole Z            :         -1.1125671            0.7294343           -0.3831328
+ Magnitude           :                                                    0.3831328
 
  ------------------------------------------------------------------------------------
 
@@ -522,8 +499,8 @@ Properties computed using the CI ROOT 0 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.2004652           -0.5785341           -0.7789993
- Magnitude           :                                                    0.7789993
+ Dipole Z            :         -1.1125671            0.7294343           -0.3831328
+ Magnitude           :                                                    0.3831328
 
  ------------------------------------------------------------------------------------
 
@@ -539,8 +516,8 @@ Properties computed using the CI ROOT 1 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.9834130           -0.5785341            0.4048789
- Magnitude           :                                                    0.4048789
+ Dipole Z            :          0.1114341            0.7294343            0.8408684
+ Magnitude           :                                                    0.8408684
 
  ------------------------------------------------------------------------------------
 
@@ -556,8 +533,8 @@ Properties computed using the CI ROOT 2 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.6006854           -0.5785341            0.0221513
- Magnitude           :                                                    0.0221513
+ Dipole Z            :          0.1114341            0.7294343            0.8408684
+ Magnitude           :                                                    0.8408684
 
  ------------------------------------------------------------------------------------
 
@@ -576,8 +553,8 @@ Transition Multipole Moments:
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.9556834            0.0000000            0.9556834
- Magnitude           :                                                    0.9556834
+ Dipole Z            :          0.8780080            0.0000000            0.8780080
+ Magnitude           :                                                    0.8780080
 
  ------------------------------------------------------------------------------------
 
@@ -593,196 +570,12 @@ Transition Multipole Moments:
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.8499328            0.0000000           -0.8499328
- Magnitude           :                                                    0.8499328
+ Dipole Z            :         -0.8780080            0.0000000           -0.8780080
+ Magnitude           :                                                    0.8780080
 
  ------------------------------------------------------------------------------------
-  ## MO-basis OPDM <0| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 2 x 2
 
-                 1                   2
-
-    1     1.99095998013080     0.02340198060702
-    2     0.02340198060702     0.00904001986920
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <1| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 2 x 2
-
-                 1                   2
-
-    1     0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <1| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 2 x 2
-
-                 1                   2
-
-    1     1.00000000000000     0.00000000000000
-    2     0.00000000000000     1.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <2| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 2 x 2
-
-                 1                   2
-
-    1     0.04740929754715     0.09170781079372
-    2    -1.36723269139197    -0.04740929754715
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <2| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 2 x 2
-
-                 1                   2
-
-    1     0.00000000000000     0.00000000000000
-    2    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <2| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 2 x 2
-
-                 1                   2
-
-    1     0.94904348260951    -0.35846160632251
-    2    -0.35846160632251     1.05095651739049
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## AO Mux (Symmetry 0) ##
-  Irrep: 1 Size: 2 x 2
-
-                 1                   2
-
-    1     0.00000000000000     0.00000000000000
-    2     0.00000000000000     0.00000000000000
-
-
-
-  ## AO Muy (Symmetry 0) ##
-  Irrep: 1 Size: 2 x 2
-
-                 1                   2
-
-    1     0.00000000000000     0.00000000000000
-    2     0.00000000000000     0.00000000000000
-
-
-
-  ## AO Muz (Symmetry 0) ##
-  Irrep: 1 Size: 2 x 2
-
-                 1                   2
-
-    1     1.16542374170630     0.16125853434386
-    2     0.16125853434386    -0.29344482714714
-
-
-
-  ## Alpha MO coefficients (Symmetry 0) ##
-  Irrep: 1 Size: 2 x 2
-
-                 1                   2
-
-    1     0.20252252183391     1.16928099094742
-    2     0.87628857408576    -0.80021980890733
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-
-    Psi4 stopped on: Sunday, 17 August 2025 07:10PM
-    Psi4 wall time for execution: 0:00:00.31
+    Psi4 stopped on: Thursday, 04 September 2025 09:40AM
+    Psi4 wall time for execution: 0:00:00.30
 
 *** Psi4 exiting successfully. Buy a developer a beer!

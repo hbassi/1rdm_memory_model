@@ -31,10 +31,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Sunday, 17 August 2025 05:46PM
+    Psi4 started on: Thursday, 04 September 2025 10:14AM
 
-    Process ID: 1441987
-    Host:       gnode010.cluster
+    Process ID: 3457832
+    Host:       node046.cluster
     PSIDATADIR: /home/hbhat/psi4conda/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -48,6 +48,9 @@ molecule hehp {
 1 1
 H  0.       0.      -0.386
 He 0.       0.       0.386
+symmetry c1
+no_com
+no_reorient
 }
 
 set {
@@ -65,21 +68,43 @@ set {
 
 thisenergy, ciwfn = prop('detci', properties=['DIPOLE', 'TRANSITION_DIPOLE'], return_wfn=True)
 
-for i in range(16):
-    for j in range(i+1):
-        ciop_dm = ciwfn.get_opdm(i,j,'SUM',True)
-        ciop_dm.print_out()
-
 mints = MintsHelper(ciwfn.basisset())
 
 AOdip = mints.ao_dipole()
+
+print("*******************")
+print("AOdip[0].print_out():")
 AOdip[0].print_out()
+print("*******************")
+print("AOdip[1].print_out():")
 AOdip[1].print_out()
+print("*******************")
+print("AOdip[2].print_out():")
 AOdip[2].print_out()
 
-ciwfn.Ca().print_out()               # Print orbital information
+# MO coefficients
+print("*******************")
+print("MO coefficients:")
+C = ciwfn.Ca().to_array()
+print(C)
 
+# dipole moment matrix in z direction
+AOdipmat = AOdip[2].to_array()
 
+# initialize CI dipole moment matrix in z direction
+CIdimatz = np.zeros((16,16))
+for i in range(16):
+    for j in range(16):
+        ciop_dm = ciwfn.get_opdm(i,j,'SUM',True)
+        # density matrix: change basis from MO to AO
+        dmAO = C @ ciop_dm.to_array() @ C.T
+        # compute this particular density matrix element
+        CIdimatz[i, j] = np.trace( dmAO @ AOdipmat )
+
+print(np.round(CIdimatz, 8))
+
+CIdimatfile = np.load('../logfiles/casscf24_s15_heh+_6-31g_CI_dimat.npz')
+print(CIdimatfile)
 
 
 --------------------------------------------------------------------------
@@ -92,8 +117,8 @@ ciwfn.Ca().print_out()               # Print orbital information
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on gnode010.cluster
-*** at Sun Aug 17 17:46:07 2025
+*** tstart() called on node046.cluster
+*** at Thu Sep  4 10:14:22 2025
 
    => Loading Basis Set <=
 
@@ -114,20 +139,20 @@ ciwfn.Ca().print_out()               # Print orbital information
 
   ==> Geometry <==
 
-    Molecular point group: c2v
+    Molecular point group: c1
     Full point group: C_inf_v
 
     Geometry (in Angstrom), charge = 1, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         H            0.000000000000     0.000000000000    -0.616715684885     1.007825032230
-         HE           0.000000000000     0.000000000000     0.155284315115     4.002603254130
+         H            0.000000000000     0.000000000000    -0.386000000000     1.007825032230
+         HE           0.000000000000     0.000000000000     0.386000000000     4.002603254130
 
-  Running in c2v symmetry.
+  Running in c1 symmetry.
 
-  Rotational constants: A = ************  B =     35.13250  C =     35.13250 [cm^-1]
-  Rotational constants: A = ************  B = 1053245.86783  C = 1053245.86783 [MHz]
+  Rotational constants: A = ************  B =     22.58120  C =     22.58120 [cm^-1]
+  Rotational constants: A = ************  B = 676967.37530  C = 676967.37530 [MHz]
   Nuclear repulsion =    1.370925416243523
 
   Charge       = 1
@@ -204,10 +229,7 @@ ciwfn.Ca().print_out()               # Print orbital information
    -------------------------
     Irrep   Nso     Nmo    
    -------------------------
-     A1         4       4 
-     A2         0       0 
-     B1         0       0 
-     B2         0       0 
+     A          4       4 
    -------------------------
     Total       4       4
    -------------------------
@@ -216,14 +238,14 @@ ciwfn.Ca().print_out()               # Print orbital information
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter SAD:    -3.47952509295405   -3.47953e+00   0.00000e+00 
+   @RHF iter SAD:    -3.47952509295406   -3.47953e+00   0.00000e+00 
    @RHF iter   1:    -2.89179510746885    5.87730e-01   4.56422e-02 ADIIS/DIIS
    @RHF iter   2:    -2.90949447568790   -1.76994e-02   6.16408e-03 ADIIS/DIIS
    @RHF iter   3:    -2.90985259125897   -3.58116e-04   4.39513e-04 ADIIS/DIIS
    @RHF iter   4:    -2.90985437750446   -1.78625e-06   2.25901e-06 DIIS
-   @RHF iter   5:    -2.90985437754501   -4.05489e-11   8.95334e-08 DIIS
-   @RHF iter   6:    -2.90985437754512   -1.11022e-13   1.83108e-09 DIIS
-   @RHF iter   7:    -2.90985437754512    8.88178e-16   6.30462e-13 DIIS
+   @RHF iter   5:    -2.90985437754501   -4.05480e-11   8.95334e-08 DIIS
+   @RHF iter   6:    -2.90985437754513   -1.13243e-13   1.83109e-09 DIIS
+   @RHF iter   7:    -2.90985437754512    3.99680e-15   6.30542e-13 DIIS
   Energy and wave function converged.
 
 
@@ -234,26 +256,26 @@ ciwfn.Ca().print_out()               # Print orbital information
 
     Doubly Occupied:                                                      
 
-       1A1    -1.632772  
+       1A     -1.632772  
 
     Virtual:                                                              
 
-       2A1    -0.263114     3A1     0.439397     4A1     1.076325  
+       2A     -0.263114     3A      0.439397     4A      1.076325  
 
     Final Occupation by Irrep:
-             A1    A2    B1    B2 
-    DOCC [     1,    0,    0,    0 ]
-    NA   [     1,    0,    0,    0 ]
-    NB   [     1,    0,    0,    0 ]
+              A 
+    DOCC [     1 ]
+    NA   [     1 ]
+    NB   [     1 ]
 
   @RHF Final Energy:    -2.90985437754512
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              1.3709254162435234
-    One-Electron Energy =                  -5.2960157980259366
-    Two-Electron Energy =                   1.0152360042372908
-    Total Energy =                         -2.9098543775451224
+    One-Electron Energy =                  -5.2960157980259357
+    Two-Electron Energy =                   1.0152360042372905
+    Total Energy =                         -2.9098543775451216
 
 Computation Completed
 
@@ -272,18 +294,18 @@ Properties computed using the SCF density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.1748680           -0.5785341           -0.7534021
- Magnitude           :                                                    0.7534021
+ Dipole Z            :         -1.0468469            0.7294343           -0.3174127
+ Magnitude           :                                                    0.3174127
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on gnode010.cluster at Sun Aug 17 17:46:07 2025
+*** tstop() called on node046.cluster at Thu Sep  4 10:14:22 2025
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.14 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
  MINTS: Wrapper to libmints.
@@ -298,9 +320,9 @@ Total time:
       Number of atomic orbitals:         4
       Number of basis functions:         4
 
-      Number of irreps:                  4
+      Number of irreps:                  1
       Integral cutoff                 1.00e-12
-      Number of functions per irrep: [   4    0    0    0 ]
+      Number of functions per irrep: [   4 ]
 
  OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
          stored in file 35.
@@ -344,20 +366,20 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
 
    ==> CI Orbital and Space information <==
 
-   ------------------------------------------------------
-               Space    Total    A1    A2    B1    B2
-   ------------------------------------------------------
-                 Nso        4     4     0     0     0
-                 Nmo        4     4     0     0     0
-               Ndocc        1     1     0     0     0
-               Nsocc        0     0     0     0     0
-   ------------------------------------------------------
-                       CI Spaces
-   ------------------------------------------------------
-        Dropped DOCC        0     0     0     0     0
-              Active        4     4     0     0     0
-        Dropped UOCC        0     0     0     0     0
-   ------------------------------------------------------
+   ------------------------------------
+               Space    Total     A
+   ------------------------------------
+                 Nso        4     4
+                 Nmo        4     4
+               Ndocc        1     1
+               Nsocc        0     0
+   ------------------------------------
+              CI Spaces
+   ------------------------------------
+        Dropped DOCC        0     0
+              Active        4     4
+        Dropped UOCC        0     0
+   ------------------------------------
 
    ==> Setting up CI strings <==
 
@@ -375,18 +397,6 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
 	h = 0; rows_per_bucket = 10
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 124999968
-	h = 1; rows_per_bucket = 0
-	h = 1; rows_left       = 0
-	h = 1; nbuckets        = 0
-	h = 2; memfree         = 124999968
-	h = 2; rows_per_bucket = 0
-	h = 2; rows_left       = 0
-	h = 2; nbuckets        = 0
-	h = 3; memfree         = 124999968
-	h = 3; rows_per_bucket = 0
-	h = 3; rows_left       = 0
-	h = 3; nbuckets        = 0
 	Sorting half-transformed integrals.
 	First half integral transformation complete.
 	Starting second half-transformation.
@@ -394,18 +404,6 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
 	h = 0; rows_per_bucket = 10
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 124999968
-	h = 1; rows_per_bucket = 0
-	h = 1; rows_left       = 0
-	h = 1; nbuckets        = 0
-	h = 2; memfree         = 124999968
-	h = 2; rows_per_bucket = 0
-	h = 2; rows_left       = 0
-	h = 2; nbuckets        = 0
-	h = 3; memfree         = 124999968
-	h = 3; rows_per_bucket = 0
-	h = 3; rows_left       = 0
-	h = 3; nbuckets        = 0
 	Two-electron integral transformation complete.
 
    ==> Starting CI iterations <==
@@ -415,30 +413,30 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
    ==> Energetics <==
 
     SCF energy =           -2.909854377545122
-    Total CI energy =      -2.932310749393183
+    Total CI energy =      -2.932310749393184
 
    ==> DETCI root 0 information <==
 
-    DETCI Root 0 energy =    -2.932310749393183
+    DETCI Root 0 energy =    -2.932310749393184
 
    The 16 most important determinants:
 
-    *   1    0.996034  (    0,    0)  1A1X 
-    *   2   -0.047811  (    1,    1)  2A1X 
-    *   3   -0.044652  (    3,    3)  4A1X 
-    *   4   -0.034978  (    1,    3)  2A1A 4A1B 
-    *   5   -0.034978  (    3,    1)  2A1B 4A1A 
-    *   6   -0.016502  (    2,    2)  3A1X 
-    *   7   -0.015720  (    1,    2)  2A1A 3A1B 
-    *   8   -0.015720  (    2,    1)  2A1B 3A1A 
-    *   9    0.013309  (    0,    1)  1A1A 2A1B 
-    *  10    0.013309  (    1,    0)  1A1B 2A1A 
-    *  11    0.005605  (    0,    2)  1A1A 3A1B 
-    *  12    0.005605  (    2,    0)  1A1B 3A1A 
-    *  13   -0.001544  (    2,    3)  3A1A 4A1B 
-    *  14   -0.001544  (    3,    2)  3A1B 4A1A 
-    *  15    0.000487  (    3,    0)  1A1B 4A1A 
-    *  16    0.000487  (    0,    3)  1A1A 4A1B 
+    *   1    0.996034  (    0,    0)  1AX 
+    *   2   -0.047811  (    1,    1)  2AX 
+    *   3   -0.044652  (    3,    3)  4AX 
+    *   4   -0.034978  (    1,    3)  2AA 4AB 
+    *   5   -0.034978  (    3,    1)  2AB 4AA 
+    *   6   -0.016502  (    2,    2)  3AX 
+    *   7   -0.015720  (    2,    1)  2AB 3AA 
+    *   8   -0.015720  (    1,    2)  2AA 3AB 
+    *   9    0.013309  (    1,    0)  1AB 2AA 
+    *  10    0.013309  (    0,    1)  1AA 2AB 
+    *  11    0.005605  (    0,    2)  1AA 3AB 
+    *  12    0.005605  (    2,    0)  1AB 3AA 
+    *  13   -0.001544  (    2,    3)  3AA 4AB 
+    *  14   -0.001544  (    3,    2)  3AB 4AA 
+    *  15    0.000487  (    0,    3)  1AA 4AB 
+    *  16    0.000487  (    3,    0)  1AB 4AA 
 
 
    ==> DETCI root 1 information <==
@@ -447,18 +445,18 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
 
    The 16 most important determinants:
 
-    *   1   -0.685851  (    0,    1)  1A1A 2A1B 
-    *   2    0.685851  (    1,    0)  1A1B 2A1A 
-    *   3    0.121477  (    2,    0)  1A1B 3A1A 
-    *   4   -0.121477  (    0,    2)  1A1A 3A1B 
-    *   5    0.101439  (    3,    0)  1A1B 4A1A 
-    *   6   -0.101439  (    0,    3)  1A1A 4A1B 
-    *   7    0.066445  (    3,    1)  2A1B 4A1A 
-    *   8   -0.066445  (    1,    3)  2A1A 4A1B 
-    *   9   -0.010033  (    2,    1)  2A1B 3A1A 
-    *  10    0.010033  (    1,    2)  2A1A 3A1B 
-    *  11   -0.006776  (    2,    3)  3A1A 4A1B 
-    *  12    0.006776  (    3,    2)  3A1B 4A1A 
+    *   1    0.685851  (    1,    0)  1AB 2AA 
+    *   2   -0.685851  (    0,    1)  1AA 2AB 
+    *   3   -0.121477  (    0,    2)  1AA 3AB 
+    *   4    0.121477  (    2,    0)  1AB 3AA 
+    *   5    0.101439  (    3,    0)  1AB 4AA 
+    *   6   -0.101439  (    0,    3)  1AA 4AB 
+    *   7    0.066445  (    3,    1)  2AB 4AA 
+    *   8   -0.066445  (    1,    3)  2AA 4AB 
+    *   9    0.010033  (    1,    2)  2AA 3AB 
+    *  10   -0.010033  (    2,    1)  2AB 3AA 
+    *  11    0.006776  (    3,    2)  3AB 4AA 
+    *  12   -0.006776  (    2,    3)  3AA 4AB 
 
 
    ==> DETCI root 2 information <==
@@ -467,246 +465,246 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
 
    The 16 most important determinants:
 
-    *   1   -0.682719  (    1,    0)  1A1B 2A1A 
-    *   2   -0.682719  (    0,    1)  1A1A 2A1B 
-    *   3    0.199508  (    1,    1)  2A1X 
-    *   4   -0.076121  (    2,    0)  1A1B 3A1A 
-    *   5   -0.076121  (    0,    2)  1A1A 3A1B 
-    *   6    0.073875  (    1,    3)  2A1A 4A1B 
-    *   7    0.073875  (    3,    1)  2A1B 4A1A 
-    *   8    0.033875  (    0,    0)  1A1X 
-    *   9   -0.030747  (    3,    3)  4A1X 
-    *  10    0.030745  (    1,    2)  2A1A 3A1B 
-    *  11    0.030745  (    2,    1)  2A1B 3A1A 
-    *  12    0.023079  (    2,    2)  3A1X 
-    *  13    0.015960  (    3,    2)  3A1B 4A1A 
-    *  14    0.015960  (    2,    3)  3A1A 4A1B 
-    *  15    0.015116  (    0,    3)  1A1A 4A1B 
-    *  16    0.015116  (    3,    0)  1A1B 4A1A 
+    *   1   -0.682719  (    0,    1)  1AA 2AB 
+    *   2   -0.682719  (    1,    0)  1AB 2AA 
+    *   3    0.199508  (    1,    1)  2AX 
+    *   4   -0.076121  (    0,    2)  1AA 3AB 
+    *   5   -0.076121  (    2,    0)  1AB 3AA 
+    *   6    0.073875  (    3,    1)  2AB 4AA 
+    *   7    0.073875  (    1,    3)  2AA 4AB 
+    *   8    0.033875  (    0,    0)  1AX 
+    *   9   -0.030747  (    3,    3)  4AX 
+    *  10    0.030745  (    1,    2)  2AA 3AB 
+    *  11    0.030745  (    2,    1)  2AB 3AA 
+    *  12    0.023079  (    2,    2)  3AX 
+    *  13    0.015960  (    3,    2)  3AB 4AA 
+    *  14    0.015960  (    2,    3)  3AA 4AB 
+    *  15    0.015116  (    3,    0)  1AB 4AA 
+    *  16    0.015116  (    0,    3)  1AA 4AB 
 
 
    ==> DETCI root 3 information <==
 
-    DETCI Root 3 energy =    -1.415524844126480
+    DETCI Root 3 energy =    -1.415524844126483
 
    The 16 most important determinants:
 
-    *   1    0.686667  (    2,    0)  1A1B 3A1A 
-    *   2   -0.686667  (    0,    2)  1A1A 3A1B 
-    *   3   -0.111479  (    1,    0)  1A1B 2A1A 
-    *   4    0.111479  (    0,    1)  1A1A 2A1B 
-    *   5   -0.080538  (    2,    1)  2A1B 3A1A 
-    *   6    0.080538  (    1,    2)  2A1A 3A1B 
-    *   7   -0.069029  (    2,    3)  3A1A 4A1B 
-    *   8    0.069029  (    3,    2)  3A1B 4A1A 
-    *   9   -0.064550  (    3,    0)  1A1B 4A1A 
-    *  10    0.064550  (    0,    3)  1A1A 4A1B 
-    *  11    0.025343  (    1,    3)  2A1A 4A1B 
-    *  12   -0.025343  (    3,    1)  2A1B 4A1A 
+    *   1   -0.686667  (    0,    2)  1AA 3AB 
+    *   2    0.686667  (    2,    0)  1AB 3AA 
+    *   3    0.111479  (    0,    1)  1AA 2AB 
+    *   4   -0.111479  (    1,    0)  1AB 2AA 
+    *   5    0.080538  (    1,    2)  2AA 3AB 
+    *   6   -0.080538  (    2,    1)  2AB 3AA 
+    *   7    0.069029  (    3,    2)  3AB 4AA 
+    *   8   -0.069029  (    2,    3)  3AA 4AB 
+    *   9    0.064550  (    0,    3)  1AA 4AB 
+    *  10   -0.064550  (    3,    0)  1AB 4AA 
+    *  11    0.025343  (    1,    3)  2AA 4AB 
+    *  12   -0.025343  (    3,    1)  2AB 4AA 
 
 
    ==> DETCI root 4 information <==
 
-    DETCI Root 4 energy =    -1.352826159810197
+    DETCI Root 4 energy =    -1.352826159810195
 
    The 16 most important determinants:
 
-    *   1   -0.682785  (    0,    2)  1A1A 3A1B 
-    *   2   -0.682785  (    2,    0)  1A1B 3A1A 
-    *   3    0.125632  (    1,    2)  2A1A 3A1B 
-    *   4    0.125632  (    2,    1)  2A1B 3A1A 
-    *   5    0.096069  (    3,    2)  3A1B 4A1A 
-    *   6    0.096069  (    2,    3)  3A1A 4A1B 
-    *   7    0.088595  (    0,    1)  1A1A 2A1B 
-    *   8    0.088595  (    1,    0)  1A1B 2A1A 
-    *   9    0.032655  (    2,    2)  3A1X 
-    *  10    0.020147  (    1,    1)  2A1X 
-    *  11    0.012027  (    0,    0)  1A1X 
-    *  12    0.008914  (    3,    3)  4A1X 
-    *  13    0.007758  (    1,    3)  2A1A 4A1B 
-    *  14    0.007758  (    3,    1)  2A1B 4A1A 
-    *  15    0.005889  (    0,    3)  1A1A 4A1B 
-    *  16    0.005889  (    3,    0)  1A1B 4A1A 
+    *   1   -0.682785  (    2,    0)  1AB 3AA 
+    *   2   -0.682785  (    0,    2)  1AA 3AB 
+    *   3    0.125632  (    2,    1)  2AB 3AA 
+    *   4    0.125632  (    1,    2)  2AA 3AB 
+    *   5    0.096069  (    2,    3)  3AA 4AB 
+    *   6    0.096069  (    3,    2)  3AB 4AA 
+    *   7    0.088595  (    1,    0)  1AB 2AA 
+    *   8    0.088595  (    0,    1)  1AA 2AB 
+    *   9    0.032655  (    2,    2)  3AX 
+    *  10    0.020147  (    1,    1)  2AX 
+    *  11    0.012027  (    0,    0)  1AX 
+    *  12    0.008914  (    3,    3)  4AX 
+    *  13    0.007758  (    3,    1)  2AB 4AA 
+    *  14    0.007758  (    1,    3)  2AA 4AB 
+    *  15    0.005889  (    0,    3)  1AA 4AB 
+    *  16    0.005889  (    3,    0)  1AB 4AA 
 
 
    ==> DETCI root 5 information <==
 
-    DETCI Root 5 energy =    -0.996884577649890
+    DETCI Root 5 energy =    -0.996884577649889
 
    The 16 most important determinants:
 
-    *   1    0.693489  (    0,    3)  1A1A 4A1B 
-    *   2   -0.693489  (    3,    0)  1A1B 4A1A 
-    *   3    0.102868  (    1,    0)  1A1B 2A1A 
-    *   4   -0.102868  (    0,    1)  1A1A 2A1B 
-    *   5    0.077461  (    3,    1)  2A1B 4A1A 
-    *   6   -0.077461  (    1,    3)  2A1A 4A1B 
-    *   7    0.041322  (    0,    2)  1A1A 3A1B 
-    *   8   -0.041322  (    2,    0)  1A1B 3A1A 
-    *   9   -0.019864  (    3,    2)  3A1B 4A1A 
-    *  10    0.019864  (    2,    3)  3A1A 4A1B 
-    *  11   -0.019729  (    1,    2)  2A1A 3A1B 
-    *  12    0.019729  (    2,    1)  2A1B 3A1A 
+    *   1   -0.693489  (    3,    0)  1AB 4AA 
+    *   2    0.693489  (    0,    3)  1AA 4AB 
+    *   3   -0.102868  (    0,    1)  1AA 2AB 
+    *   4    0.102868  (    1,    0)  1AB 2AA 
+    *   5    0.077461  (    3,    1)  2AB 4AA 
+    *   6   -0.077461  (    1,    3)  2AA 4AB 
+    *   7    0.041322  (    0,    2)  1AA 3AB 
+    *   8   -0.041322  (    2,    0)  1AB 3AA 
+    *   9    0.019864  (    2,    3)  3AA 4AB 
+    *  10   -0.019864  (    3,    2)  3AB 4AA 
+    *  11   -0.019729  (    1,    2)  2AA 3AB 
+    *  12    0.019729  (    2,    1)  2AB 3AA 
 
 
    ==> DETCI root 6 information <==
 
-    DETCI Root 6 energy =    -0.665420297979947
+    DETCI Root 6 energy =    -0.665420297979946
 
    The 16 most important determinants:
 
-    *   1   -0.643545  (    3,    0)  1A1B 4A1A 
-    *   2   -0.643545  (    0,    3)  1A1A 4A1B 
-    *   3   -0.363185  (    1,    1)  2A1X 
-    *   4   -0.094589  (    3,    1)  2A1B 4A1A 
-    *   5   -0.094589  (    1,    3)  2A1A 4A1B 
-    *   6    0.083109  (    2,    2)  3A1X 
-    *   7   -0.074142  (    0,    1)  1A1A 2A1B 
-    *   8   -0.074142  (    1,    0)  1A1B 2A1A 
-    *   9    0.036009  (    2,    1)  2A1B 3A1A 
-    *  10    0.036009  (    1,    2)  2A1A 3A1B 
-    *  11    0.026818  (    3,    3)  4A1X 
-    *  12   -0.017609  (    0,    0)  1A1X 
-    *  13   -0.013398  (    2,    0)  1A1B 3A1A 
-    *  14   -0.013398  (    0,    2)  1A1A 3A1B 
-    *  15   -0.003036  (    3,    2)  3A1B 4A1A 
-    *  16   -0.003036  (    2,    3)  3A1A 4A1B 
+    *   1   -0.643545  (    0,    3)  1AA 4AB 
+    *   2   -0.643545  (    3,    0)  1AB 4AA 
+    *   3   -0.363185  (    1,    1)  2AX 
+    *   4   -0.094589  (    3,    1)  2AB 4AA 
+    *   5   -0.094589  (    1,    3)  2AA 4AB 
+    *   6    0.083109  (    2,    2)  3AX 
+    *   7   -0.074142  (    0,    1)  1AA 2AB 
+    *   8   -0.074142  (    1,    0)  1AB 2AA 
+    *   9    0.036009  (    1,    2)  2AA 3AB 
+    *  10    0.036009  (    2,    1)  2AB 3AA 
+    *  11    0.026818  (    3,    3)  4AX 
+    *  12   -0.017609  (    0,    0)  1AX 
+    *  13   -0.013398  (    0,    2)  1AA 3AB 
+    *  14   -0.013398  (    2,    0)  1AB 3AA 
+    *  15   -0.003036  (    2,    3)  3AA 4AB 
+    *  16   -0.003036  (    3,    2)  3AB 4AA 
 
 
    ==> DETCI root 7 information <==
 
-    DETCI Root 7 energy =    -0.575668807064620
+    DETCI Root 7 energy =    -0.575668807064619
 
    The 16 most important determinants:
 
-    *   1    0.862799  (    1,    1)  2A1X 
-    *   2   -0.273973  (    3,    0)  1A1B 4A1A 
-    *   3   -0.273973  (    0,    3)  1A1A 4A1B 
-    *   4    0.132885  (    1,    0)  1A1B 2A1A 
-    *   5    0.132885  (    0,    1)  1A1A 2A1B 
-    *   6    0.124992  (    2,    1)  2A1B 3A1A 
-    *   7    0.124992  (    1,    2)  2A1A 3A1B 
-    *   8    0.119425  (    3,    1)  2A1B 4A1A 
-    *   9    0.119425  (    1,    3)  2A1A 4A1B 
-    *  10   -0.049850  (    2,    2)  3A1X 
-    *  11    0.049442  (    0,    0)  1A1X 
-    *  12    0.048870  (    0,    2)  1A1A 3A1B 
-    *  13    0.048870  (    2,    0)  1A1B 3A1A 
-    *  14   -0.017034  (    3,    2)  3A1B 4A1A 
-    *  15   -0.017034  (    2,    3)  3A1A 4A1B 
-    *  16    0.009048  (    3,    3)  4A1X 
+    *   1    0.862799  (    1,    1)  2AX 
+    *   2   -0.273973  (    0,    3)  1AA 4AB 
+    *   3   -0.273973  (    3,    0)  1AB 4AA 
+    *   4    0.132885  (    0,    1)  1AA 2AB 
+    *   5    0.132885  (    1,    0)  1AB 2AA 
+    *   6    0.124992  (    1,    2)  2AA 3AB 
+    *   7    0.124992  (    2,    1)  2AB 3AA 
+    *   8    0.119425  (    3,    1)  2AB 4AA 
+    *   9    0.119425  (    1,    3)  2AA 4AB 
+    *  10   -0.049850  (    2,    2)  3AX 
+    *  11    0.049442  (    0,    0)  1AX 
+    *  12    0.048870  (    2,    0)  1AB 3AA 
+    *  13    0.048870  (    0,    2)  1AA 3AB 
+    *  14   -0.017034  (    3,    2)  3AB 4AA 
+    *  15   -0.017034  (    2,    3)  3AA 4AB 
+    *  16    0.009048  (    3,    3)  4AX 
 
 
    ==> DETCI root 8 information <==
 
-    DETCI Root 8 energy =    -0.087635609746607
+    DETCI Root 8 energy =    -0.087635609746606
 
    The 16 most important determinants:
 
-    *   1    0.649927  (    2,    1)  2A1B 3A1A 
-    *   2   -0.649927  (    1,    2)  2A1A 3A1B 
-    *   3   -0.208778  (    3,    1)  2A1B 4A1A 
-    *   4    0.208778  (    1,    3)  2A1A 4A1B 
-    *   5    0.161666  (    2,    3)  3A1A 4A1B 
-    *   6   -0.161666  (    3,    2)  3A1B 4A1A 
-    *   7   -0.087148  (    0,    2)  1A1A 3A1B 
-    *   8    0.087148  (    2,    0)  1A1B 3A1A 
-    *   9   -0.016334  (    0,    1)  1A1A 2A1B 
-    *  10    0.016334  (    1,    0)  1A1B 2A1A 
-    *  11    0.002970  (    0,    3)  1A1A 4A1B 
-    *  12   -0.002970  (    3,    0)  1A1B 4A1A 
+    *   1   -0.649927  (    1,    2)  2AA 3AB 
+    *   2    0.649927  (    2,    1)  2AB 3AA 
+    *   3    0.208778  (    1,    3)  2AA 4AB 
+    *   4   -0.208778  (    3,    1)  2AB 4AA 
+    *   5   -0.161666  (    3,    2)  3AB 4AA 
+    *   6    0.161666  (    2,    3)  3AA 4AB 
+    *   7   -0.087148  (    0,    2)  1AA 3AB 
+    *   8    0.087148  (    2,    0)  1AB 3AA 
+    *   9   -0.016334  (    0,    1)  1AA 2AB 
+    *  10    0.016334  (    1,    0)  1AB 2AA 
+    *  11   -0.002970  (    3,    0)  1AB 4AA 
+    *  12    0.002970  (    0,    3)  1AA 4AB 
 
 
    ==> DETCI root 9 information <==
 
-    DETCI Root 9 energy =     0.081792989816061
+    DETCI Root 9 energy =     0.081792989816063
 
    The 16 most important determinants:
 
-    *   1    0.549825  (    1,    2)  2A1A 3A1B 
-    *   2    0.549825  (    2,    1)  2A1B 3A1A 
-    *   3   -0.405362  (    1,    3)  2A1A 4A1B 
-    *   4   -0.405362  (    3,    1)  2A1B 4A1A 
-    *   5    0.134119  (    2,    2)  3A1X 
-    *   6   -0.107872  (    3,    3)  4A1X 
-    *   7    0.095145  (    0,    2)  1A1A 3A1B 
-    *   8    0.095145  (    2,    0)  1A1B 3A1A 
-    *   9    0.092776  (    0,    3)  1A1A 4A1B 
-    *  10    0.092776  (    3,    0)  1A1B 4A1A 
-    *  11   -0.021211  (    0,    1)  1A1A 2A1B 
-    *  12   -0.021211  (    1,    0)  1A1B 2A1A 
-    *  13    0.016659  (    1,    1)  2A1X 
-    *  14   -0.014880  (    2,    3)  3A1A 4A1B 
-    *  15   -0.014880  (    3,    2)  3A1B 4A1A 
-    *  16   -0.013570  (    0,    0)  1A1X 
+    *   1    0.549825  (    2,    1)  2AB 3AA 
+    *   2    0.549825  (    1,    2)  2AA 3AB 
+    *   3   -0.405362  (    3,    1)  2AB 4AA 
+    *   4   -0.405362  (    1,    3)  2AA 4AB 
+    *   5    0.134119  (    2,    2)  3AX 
+    *   6   -0.107872  (    3,    3)  4AX 
+    *   7    0.095145  (    2,    0)  1AB 3AA 
+    *   8    0.095145  (    0,    2)  1AA 3AB 
+    *   9    0.092776  (    0,    3)  1AA 4AB 
+    *  10    0.092776  (    3,    0)  1AB 4AA 
+    *  11   -0.021211  (    0,    1)  1AA 2AB 
+    *  12   -0.021211  (    1,    0)  1AB 2AA 
+    *  13    0.016659  (    1,    1)  2AX 
+    *  14   -0.014880  (    3,    2)  3AB 4AA 
+    *  15   -0.014880  (    2,    3)  3AA 4AB 
+    *  16   -0.013570  (    0,    0)  1AX 
 
 
    ==> DETCI root 10 information <==
 
-    DETCI Root 10 energy =     0.217150182674890
+    DETCI Root 10 energy =     0.217150182674892
 
    The 16 most important determinants:
 
-    *   1    0.651812  (    3,    1)  2A1B 4A1A 
-    *   2   -0.651812  (    1,    3)  2A1A 4A1B 
-    *   3   -0.232133  (    1,    2)  2A1A 3A1B 
-    *   4    0.232133  (    2,    1)  2A1B 3A1A 
-    *   5   -0.101277  (    2,    3)  3A1A 4A1B 
-    *   6    0.101277  (    3,    2)  3A1B 4A1A 
-    *   7   -0.076229  (    1,    0)  1A1B 2A1A 
-    *   8    0.076229  (    0,    1)  1A1A 2A1B 
-    *   9    0.063136  (    3,    0)  1A1B 4A1A 
-    *  10   -0.063136  (    0,    3)  1A1A 4A1B 
-    *  11   -0.034661  (    0,    2)  1A1A 3A1B 
-    *  12    0.034661  (    2,    0)  1A1B 3A1A 
+    *   1    0.651812  (    1,    3)  2AA 4AB 
+    *   2   -0.651812  (    3,    1)  2AB 4AA 
+    *   3   -0.232133  (    2,    1)  2AB 3AA 
+    *   4    0.232133  (    1,    2)  2AA 3AB 
+    *   5   -0.101277  (    3,    2)  3AB 4AA 
+    *   6    0.101277  (    2,    3)  3AA 4AB 
+    *   7   -0.076229  (    0,    1)  1AA 2AB 
+    *   8    0.076229  (    1,    0)  1AB 2AA 
+    *   9    0.063136  (    0,    3)  1AA 4AB 
+    *  10   -0.063136  (    3,    0)  1AB 4AA 
+    *  11   -0.034661  (    2,    0)  1AB 3AA 
+    *  12    0.034661  (    0,    2)  1AA 3AB 
 
 
    ==> DETCI root 11 information <==
 
-    DETCI Root 11 energy =     0.442295207699647
+    DETCI Root 11 energy =     0.442295207699648
 
    The 16 most important determinants:
 
-    *   1    0.495137  (    3,    1)  2A1B 4A1A 
-    *   2    0.495137  (    1,    3)  2A1A 4A1B 
-    *   3    0.380409  (    2,    1)  2A1B 3A1A 
-    *   4    0.380409  (    1,    2)  2A1A 3A1B 
-    *   5   -0.258125  (    1,    1)  2A1X 
-    *   6    0.224122  (    2,    3)  3A1A 4A1B 
-    *   7    0.224122  (    3,    2)  3A1B 4A1A 
-    *   8    0.144640  (    3,    3)  4A1X 
-    *   9    0.105713  (    0,    2)  1A1A 3A1B 
-    *  10    0.105713  (    2,    0)  1A1B 3A1A 
-    *  11   -0.083987  (    2,    2)  3A1X 
-    *  12    0.038363  (    0,    0)  1A1X 
-    *  13    0.022998  (    1,    0)  1A1B 2A1A 
-    *  14    0.022998  (    0,    1)  1A1A 2A1B 
-    *  15    0.012504  (    3,    0)  1A1B 4A1A 
-    *  16    0.012504  (    0,    3)  1A1A 4A1B 
+    *   1    0.495137  (    1,    3)  2AA 4AB 
+    *   2    0.495137  (    3,    1)  2AB 4AA 
+    *   3    0.380409  (    1,    2)  2AA 3AB 
+    *   4    0.380409  (    2,    1)  2AB 3AA 
+    *   5   -0.258125  (    1,    1)  2AX 
+    *   6    0.224122  (    2,    3)  3AA 4AB 
+    *   7    0.224122  (    3,    2)  3AB 4AA 
+    *   8    0.144640  (    3,    3)  4AX 
+    *   9    0.105713  (    2,    0)  1AB 3AA 
+    *  10    0.105713  (    0,    2)  1AA 3AB 
+    *  11   -0.083987  (    2,    2)  3AX 
+    *  12    0.038363  (    0,    0)  1AX 
+    *  13    0.022998  (    1,    0)  1AB 2AA 
+    *  14    0.022998  (    0,    1)  1AA 2AB 
+    *  15    0.012504  (    0,    3)  1AA 4AB 
+    *  16    0.012504  (    3,    0)  1AB 4AA 
 
 
    ==> DETCI root 12 information <==
 
-    DETCI Root 12 energy =     0.698817046381269
+    DETCI Root 12 energy =     0.698817046381271
 
    The 16 most important determinants:
 
-    *   1    0.865252  (    2,    2)  3A1X 
-    *   2   -0.296843  (    2,    3)  3A1A 4A1B 
-    *   3   -0.296843  (    3,    2)  3A1B 4A1A 
-    *   4    0.186318  (    1,    3)  2A1A 4A1B 
-    *   5    0.186318  (    3,    1)  2A1B 4A1A 
-    *   6    0.030482  (    0,    3)  1A1A 4A1B 
-    *   7    0.030482  (    3,    0)  1A1B 4A1A 
-    *   8    0.029809  (    0,    1)  1A1A 2A1B 
-    *   9    0.029809  (    1,    0)  1A1B 2A1A 
-    *  10    0.026211  (    0,    0)  1A1X 
-    *  11    0.022520  (    2,    1)  2A1B 3A1A 
-    *  12    0.022520  (    1,    2)  2A1A 3A1B 
-    *  13   -0.010573  (    0,    2)  1A1A 3A1B 
-    *  14   -0.010573  (    2,    0)  1A1B 3A1A 
-    *  15   -0.010004  (    1,    1)  2A1X 
-    *  16    0.004171  (    3,    3)  4A1X 
+    *   1    0.865252  (    2,    2)  3AX 
+    *   2   -0.296843  (    3,    2)  3AB 4AA 
+    *   3   -0.296843  (    2,    3)  3AA 4AB 
+    *   4    0.186318  (    1,    3)  2AA 4AB 
+    *   5    0.186318  (    3,    1)  2AB 4AA 
+    *   6    0.030482  (    0,    3)  1AA 4AB 
+    *   7    0.030482  (    3,    0)  1AB 4AA 
+    *   8    0.029809  (    1,    0)  1AB 2AA 
+    *   9    0.029809  (    0,    1)  1AA 2AB 
+    *  10    0.026211  (    0,    0)  1AX 
+    *  11    0.022520  (    1,    2)  2AA 3AB 
+    *  12    0.022520  (    2,    1)  2AB 3AA 
+    *  13   -0.010573  (    0,    2)  1AA 3AB 
+    *  14   -0.010573  (    2,    0)  1AB 3AA 
+    *  15   -0.010004  (    1,    1)  2AX 
+    *  16    0.004171  (    3,    3)  4AX 
 
 
    ==> DETCI root 13 information <==
@@ -715,18 +713,18 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
 
    The 16 most important determinants:
 
-    *   1    0.677054  (    2,    3)  3A1A 4A1B 
-    *   2   -0.677054  (    3,    2)  3A1B 4A1A 
-    *   3   -0.143161  (    1,    3)  2A1A 4A1B 
-    *   4    0.143161  (    3,    1)  2A1B 4A1A 
-    *   5   -0.129356  (    2,    1)  2A1B 3A1A 
-    *   6    0.129356  (    1,    2)  2A1A 3A1B 
-    *   7    0.056813  (    2,    0)  1A1B 3A1A 
-    *   8   -0.056813  (    0,    2)  1A1A 3A1B 
-    *   9   -0.024933  (    0,    3)  1A1A 4A1B 
-    *  10    0.024933  (    3,    0)  1A1B 4A1A 
-    *  11    0.022823  (    0,    1)  1A1A 2A1B 
-    *  12   -0.022823  (    1,    0)  1A1B 2A1A 
+    *   1    0.677054  (    3,    2)  3AB 4AA 
+    *   2   -0.677054  (    2,    3)  3AA 4AB 
+    *   3    0.143161  (    1,    3)  2AA 4AB 
+    *   4   -0.143161  (    3,    1)  2AB 4AA 
+    *   5   -0.129356  (    1,    2)  2AA 3AB 
+    *   6    0.129356  (    2,    1)  2AB 3AA 
+    *   7    0.056813  (    0,    2)  1AA 3AB 
+    *   8   -0.056813  (    2,    0)  1AB 3AA 
+    *   9    0.024933  (    0,    3)  1AA 4AB 
+    *  10   -0.024933  (    3,    0)  1AB 4AA 
+    *  11    0.022823  (    1,    0)  1AB 2AA 
+    *  12   -0.022823  (    0,    1)  1AA 2AB 
 
 
    ==> DETCI root 14 information <==
@@ -735,46 +733,46 @@ DAVIDSON update not available for OLSEN or MITRUSH iterators
 
    The 16 most important determinants:
 
-    *   1   -0.585964  (    3,    2)  3A1B 4A1A 
-    *   2   -0.585964  (    2,    3)  3A1A 4A1B 
-    *   3   -0.448508  (    2,    2)  3A1X 
-    *   4    0.205464  (    3,    3)  4A1X 
-    *   5    0.133541  (    1,    2)  2A1A 3A1B 
-    *   6    0.133541  (    2,    1)  2A1B 3A1A 
-    *   7   -0.097890  (    1,    1)  2A1X 
-    *   8    0.084416  (    3,    1)  2A1B 4A1A 
-    *   9    0.084416  (    1,    3)  2A1A 4A1B 
-    *  10   -0.069858  (    0,    2)  1A1A 3A1B 
-    *  11   -0.069858  (    2,    0)  1A1B 3A1A 
-    *  12   -0.017016  (    1,    0)  1A1B 2A1A 
-    *  13   -0.017016  (    0,    1)  1A1A 2A1B 
-    *  14    0.006646  (    0,    0)  1A1X 
-    *  15    0.004095  (    3,    0)  1A1B 4A1A 
-    *  16    0.004095  (    0,    3)  1A1A 4A1B 
+    *   1   -0.585964  (    2,    3)  3AA 4AB 
+    *   2   -0.585964  (    3,    2)  3AB 4AA 
+    *   3   -0.448508  (    2,    2)  3AX 
+    *   4    0.205464  (    3,    3)  4AX 
+    *   5    0.133541  (    2,    1)  2AB 3AA 
+    *   6    0.133541  (    1,    2)  2AA 3AB 
+    *   7   -0.097890  (    1,    1)  2AX 
+    *   8    0.084416  (    1,    3)  2AA 4AB 
+    *   9    0.084416  (    3,    1)  2AB 4AA 
+    *  10   -0.069858  (    2,    0)  1AB 3AA 
+    *  11   -0.069858  (    0,    2)  1AA 3AB 
+    *  12   -0.017016  (    0,    1)  1AA 2AB 
+    *  13   -0.017016  (    1,    0)  1AB 2AA 
+    *  14    0.006646  (    0,    0)  1AX 
+    *  15    0.004095  (    0,    3)  1AA 4AB 
+    *  16    0.004095  (    3,    0)  1AB 4AA 
 
 
    ==> DETCI root 15 information <==
 
-    DETCI Root 15 energy =     1.427315657520074
+    DETCI Root 15 energy =     1.427315657520073
 
    The 16 most important determinants:
 
-    *   1    0.959891  (    3,    3)  4A1X 
-    *   2   -0.136858  (    3,    1)  2A1B 4A1A 
-    *   3   -0.136858  (    1,    3)  2A1A 4A1B 
-    *   4    0.117787  (    2,    2)  3A1X 
-    *   5    0.091064  (    3,    2)  3A1B 4A1A 
-    *   6    0.091064  (    2,    3)  3A1A 4A1B 
-    *   7    0.067758  (    1,    1)  2A1X 
-    *   8    0.038490  (    0,    0)  1A1X 
-    *   9    0.028548  (    0,    3)  1A1A 4A1B 
-    *  10    0.028548  (    3,    0)  1A1B 4A1A 
-    *  11   -0.027312  (    1,    2)  2A1A 3A1B 
-    *  12   -0.027312  (    2,    1)  2A1B 3A1A 
-    *  13   -0.023590  (    0,    1)  1A1A 2A1B 
-    *  14   -0.023590  (    1,    0)  1A1B 2A1A 
-    *  15    0.013839  (    0,    2)  1A1A 3A1B 
-    *  16    0.013839  (    2,    0)  1A1B 3A1A 
+    *   1    0.959891  (    3,    3)  4AX 
+    *   2   -0.136858  (    1,    3)  2AA 4AB 
+    *   3   -0.136858  (    3,    1)  2AB 4AA 
+    *   4    0.117787  (    2,    2)  3AX 
+    *   5    0.091064  (    2,    3)  3AA 4AB 
+    *   6    0.091064  (    3,    2)  3AB 4AA 
+    *   7    0.067758  (    1,    1)  2AX 
+    *   8    0.038490  (    0,    0)  1AX 
+    *   9    0.028548  (    3,    0)  1AB 4AA 
+    *  10    0.028548  (    0,    3)  1AA 4AB 
+    *  11   -0.027312  (    2,    1)  2AB 3AA 
+    *  12   -0.027312  (    1,    2)  2AA 3AB 
+    *  13   -0.023590  (    1,    0)  1AB 2AA 
+    *  14   -0.023590  (    0,    1)  1AA 2AB 
+    *  15    0.013839  (    2,    0)  1AB 3AA 
+    *  16    0.013839  (    0,    2)  1AA 3AB 
 
 		 "A good bug is a dead bug" 
 
@@ -799,8 +797,8 @@ Properties computed using the DETCI density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.1299005           -0.5785341           -0.7084346
- Magnitude           :                                                    0.7084346
+ Dipole Z            :         -1.0018794            0.7294343           -0.2724451
+ Magnitude           :                                                    0.2724451
 
  ------------------------------------------------------------------------------------
 
@@ -819,8 +817,8 @@ Properties computed using the CI density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.1299005           -0.5785341           -0.7084346
- Magnitude           :                                                    0.7084346
+ Dipole Z            :         -1.0018794            0.7294343           -0.2724451
+ Magnitude           :                                                    0.2724451
 
  ------------------------------------------------------------------------------------
 
@@ -839,8 +837,8 @@ Properties computed using the CI ROOT 0 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.1299005           -0.5785341           -0.7084346
- Magnitude           :                                                    0.7084346
+ Dipole Z            :         -1.0018794            0.7294343           -0.2724451
+ Magnitude           :                                                    0.2724451
 
  ------------------------------------------------------------------------------------
 
@@ -856,8 +854,8 @@ Properties computed using the CI ROOT 1 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          1.1780107           -0.5785341            0.5994766
- Magnitude           :                                                    0.5994766
+ Dipole Z            :          0.3060318            0.7294343            1.0354661
+ Magnitude           :                                                    1.0354661
 
  ------------------------------------------------------------------------------------
 
@@ -873,8 +871,8 @@ Properties computed using the CI ROOT 2 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.9419100           -0.5785341            0.3633760
- Magnitude           :                                                    0.3633760
+ Dipole Z            :          0.0699311            0.7294343            0.7993654
+ Magnitude           :                                                    0.7993654
 
  ------------------------------------------------------------------------------------
 
@@ -890,8 +888,8 @@ Properties computed using the CI ROOT 3 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.7395137           -0.5785341            0.1609796
- Magnitude           :                                                    0.1609796
+ Dipole Z            :         -0.1324652            0.7294343            0.5969691
+ Magnitude           :                                                    0.5969691
 
  ------------------------------------------------------------------------------------
 
@@ -907,8 +905,8 @@ Properties computed using the CI ROOT 4 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.8039152           -0.5785341            0.2253811
- Magnitude           :                                                    0.2253811
+ Dipole Z            :         -0.0680637            0.7294343            0.6613705
+ Magnitude           :                                                    0.6613705
 
  ------------------------------------------------------------------------------------
 
@@ -924,8 +922,8 @@ Properties computed using the CI ROOT 5 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.0972232           -0.5785341           -0.6757573
- Magnitude           :                                                    0.6757573
+ Dipole Z            :         -0.9692021            0.7294343           -0.2397678
+ Magnitude           :                                                    0.2397678
 
  ------------------------------------------------------------------------------------
 
@@ -941,8 +939,8 @@ Properties computed using the CI ROOT 6 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.3912281           -0.5785341           -0.1873060
- Magnitude           :                                                    0.1873060
+ Dipole Z            :         -0.4807508            0.7294343            0.2486835
+ Magnitude           :                                                    0.2486835
 
  ------------------------------------------------------------------------------------
 
@@ -958,8 +956,8 @@ Properties computed using the CI ROOT 7 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          2.3144400           -0.5785341            1.7359060
- Magnitude           :                                                    1.7359060
+ Dipole Z            :          1.4424611            0.7294343            2.1718954
+ Magnitude           :                                                    2.1718954
 
  ------------------------------------------------------------------------------------
 
@@ -975,8 +973,8 @@ Properties computed using the CI ROOT 8 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          1.6979296           -0.5785341            1.1193955
- Magnitude           :                                                    1.1193955
+ Dipole Z            :          0.8259507            0.7294343            1.5553850
+ Magnitude           :                                                    1.5553850
 
  ------------------------------------------------------------------------------------
 
@@ -992,8 +990,8 @@ Properties computed using the CI ROOT 9 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          1.0653156           -0.5785341            0.4867815
- Magnitude           :                                                    0.4867815
+ Dipole Z            :          0.1933366            0.7294343            0.9227709
+ Magnitude           :                                                    0.9227709
 
  ------------------------------------------------------------------------------------
 
@@ -1009,8 +1007,8 @@ Properties computed using the CI ROOT 10 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          1.9906399           -0.5785341            1.4121058
- Magnitude           :                                                    1.4121058
+ Dipole Z            :          1.1186610            0.7294343            1.8480953
+ Magnitude           :                                                    1.8480953
 
  ------------------------------------------------------------------------------------
 
@@ -1026,8 +1024,8 @@ Properties computed using the CI ROOT 11 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          2.4386016           -0.5785341            1.8600676
- Magnitude           :                                                    1.8600676
+ Dipole Z            :          1.5666227            0.7294343            2.2960570
+ Magnitude           :                                                    2.2960570
 
  ------------------------------------------------------------------------------------
 
@@ -1043,8 +1041,8 @@ Properties computed using the CI ROOT 12 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.8651489           -0.5785341            0.2866148
- Magnitude           :                                                    0.2866148
+ Dipole Z            :         -0.0068300            0.7294343            0.7226043
+ Magnitude           :                                                    0.7226043
 
  ------------------------------------------------------------------------------------
 
@@ -1060,8 +1058,8 @@ Properties computed using the CI ROOT 13 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          1.0469062           -0.5785341            0.4683721
- Magnitude           :                                                    0.4683721
+ Dipole Z            :          0.1749273            0.7294343            0.9043616
+ Magnitude           :                                                    0.9043616
 
  ------------------------------------------------------------------------------------
 
@@ -1077,8 +1075,8 @@ Properties computed using the CI ROOT 14 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          1.8901972           -0.5785341            1.3116631
- Magnitude           :                                                    1.3116631
+ Dipole Z            :          1.0182183            0.7294343            1.7476526
+ Magnitude           :                                                    1.7476526
 
  ------------------------------------------------------------------------------------
 
@@ -1094,8 +1092,8 @@ Properties computed using the CI ROOT 15 density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.3454387           -0.5785341           -0.2330954
- Magnitude           :                                                    0.2330954
+ Dipole Z            :         -0.5265402            0.7294343            0.2028941
+ Magnitude           :                                                    0.2028941
 
  ------------------------------------------------------------------------------------
 
@@ -1267,7 +1265,7 @@ Transition Multipole Moments:
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.0104784            0.0000000           -0.0104784
+ Dipole Z            :          0.0104784            0.0000000            0.0104784
  Magnitude           :                                                    0.0104784
 
  ------------------------------------------------------------------------------------
@@ -1318,7 +1316,7 @@ Transition Multipole Moments:
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.0092935            0.0000000            0.0092935
+ Dipole Z            :         -0.0092935            0.0000000           -0.0092935
  Magnitude           :                                                    0.0092935
 
  ------------------------------------------------------------------------------------
@@ -1356,3270 +1354,6 @@ Transition Multipole Moments:
  Magnitude           :                                                    0.0007169
 
  ------------------------------------------------------------------------------------
-  ## MO-basis OPDM <0| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     1.98458687906453     0.02502889232539     0.01056056117677    -0.00002236108880
-    2     0.02502889232539     0.00786702226341     0.00227915694487     0.00652967891323
-    3     0.01056056117677     0.00227915694487     0.00110647020503     0.00129394241388
-    4    -0.00002236108880     0.00652967891323     0.00129394241388     0.00643962846703
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <1| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    4     0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <1| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.99087708375172     0.01104272570297     0.01513627510287    -0.09278855300171
-    2     0.01104272570297     0.94981508830326     0.16753082099322     0.13928009224870
-    3     0.01513627510287     0.16753082099322     0.02980647351867     0.02331180782540
-    4    -0.09278855300171     0.13928009224870     0.02331180782540     0.02950135442635
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <2| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.04847155442502     0.06751974234849     0.02430999381470     0.04667766487385
-    2    -1.35429595702674    -0.04338393303723    -0.01516855478335    -0.02131333107297
-    3    -0.15054533784722    -0.00680811007857    -0.00263090866148    -0.00372140818995
-    4     0.03222804443779    -0.00501256670441    -0.00258500763054    -0.00245671272631
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <2| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    2    -0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    4    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <2| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.94655073899047    -0.32111849548559    -0.05016918865858    -0.10320753518385
-    2    -0.32111849548559     1.02462287028751     0.11998339883557     0.00527570183233
-    3    -0.05016918865858     0.11998339883557     0.01505401456191     0.00199655768730
-    4    -0.10320753518385     0.00527570183233     0.00199655768730     0.01377237616011
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <3| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    2    -0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    4    -0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <3| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00081631908919    -0.02235603036034    -0.00311159771743     0.00550891998542
-    2    -0.02470864326525    -0.15466823711982    -0.02742779217881    -0.02152526704242
-    3     0.12447934612005     0.95107646439179     0.16938008398647     0.12860696421242
-    4     0.01799181034994    -0.08715878902950    -0.01517426565703    -0.01552816595584
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <3| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    2     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <3| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.97621250699469    -0.10733447428808    -0.02686847448376    -0.10045072207127
-    2    -0.10733447428808     0.03911267366518    -0.15659716279301     0.02551108255268
-    3    -0.02686847448376    -0.15659716279301     0.96552672274082    -0.08456706080307
-    4    -0.10045072207127     0.02551108255268    -0.08456706080307     0.01914809659931
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <4| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.01866871015271     0.01290328286711     0.01986601969217    -0.00460396743796
-    2     0.17843938711162    -0.00406091460694    -0.00381060716689    -0.00240387268173
-    3    -1.35635124198276    -0.03793408531935    -0.01297815076595    -0.01813317803178
-    4     0.01302421517386    -0.00422908179325    -0.00337610453494    -0.00162964477982
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <4| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    2    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    4     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <4| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.01602965787803    -0.02218615574152    -0.02771086756946    -0.00870303004174
-    2    -0.04039905894473    -0.10406034043858    -0.00620250118695     0.00918827110806
-    3    -0.21986842619393     0.99863165606810     0.11624728007155    -0.00694549787670
-    4    -0.02455077521523     0.00227851146459     0.00429928600255     0.00384271824505
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <4| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    4     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <4| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.94844748976415    -0.16576639289642    -0.03762401934373    -0.12956749316474
-    2    -0.16576639289642     0.04819692102324    -0.10622474838191     0.02563306520957
-    3    -0.03762401934373    -0.10622474838191     0.98454843253419     0.00189393810928
-    4    -0.12956749316474     0.02563306520957     0.00189393810928     0.01880715667841
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <5| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    3     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    4     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <5| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00962876617494    -0.09132815878673    -0.00733389350585    -0.01311006430878
-    2     0.02050835007470     0.15100202861512     0.02604189530944     0.02060226571961
-    3    -0.03109155290501    -0.05932049823240    -0.01070426943193    -0.00576151667649
-    4    -0.10142813513839    -0.95165891255242    -0.17004020572529    -0.13066899300825
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <5| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    4     0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <5| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00984634276319     0.04180581626752    -0.07917246940249     0.01091870567736
-    2     0.01709350870325    -0.03003925629995     0.15196616529478    -0.01600399689033
-    3     0.00696305886145     0.01021979024138    -0.06266841679579     0.00433468408416
-    4     0.04455022176631     0.15141971148075    -0.96486927449262     0.08286133033255
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <5| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    2     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <5| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.98643187795834    -0.10906774947816     0.02349166394826    -0.01757818548407
-    2    -0.10906774947816     0.03394257103016    -0.01157865331104    -0.14189161519829
-    3     0.02349166394826    -0.01157865331104     0.00498249636344     0.06036840528086
-    4    -0.01757818548407    -0.14189161519829     0.06036840528086     0.97464305464805
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <6| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.03782870486836     0.05206130561878     0.00456261090450     0.06268151467249
-    2    -0.15705104517285     0.03823952856977     0.00969092830417     0.03367040963424
-    3    -0.02480345291400    -0.00620045580511    -0.00401589680540    -0.00251755960730
-    4    -1.28451241790211    -0.00986533575100    -0.00422282279933     0.00360507310399
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <6| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    3    -0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    4     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <6| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.08262677268543    -0.10144792274738    -0.02303856182277     0.02765964354685
-    2     0.48254115397343    -0.05544224815483    -0.01240221829206    -0.04893629405081
-    3    -0.06282071393545     0.03732498209230     0.00799323444744     0.00775485575798
-    4     0.08682792087229     0.84475406760470     0.09287396667928    -0.03517775897804
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <6| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    2     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <6| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00284445617251    -0.01945993651557    -0.11910703131368    -0.01540533014660
-    2    -0.11642357548994    -0.02019133425076    -0.00583152241658    -0.00127632750864
-    3    -0.10746841491179     0.01991197724926     0.03218886814168     0.01631515780785
-    4    -0.02777889182100    -0.11818777598195     0.85999399452420    -0.00915307771841
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <6| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    4    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <6| Etu |6> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.84027455787333     0.17724560688295    -0.00318758095676     0.00225450510417
-    2     0.17724560688295     0.29528801262934    -0.01760966822789     0.15884199971910
-    3    -0.00318758095676    -0.01760966822789     0.01678495986435     0.00976539438488
-    4     0.00225450510417     0.15884199971910     0.00976539438488     0.84765246963297
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <7| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.10230935317576     0.00623872172429    -0.00439074378012     0.01506794511705
-    2     0.28919888581646    -0.09124882562860    -0.03013063689042    -0.07127872829719
-    3     0.10010381316415    -0.00789219368604    -0.00168404767902    -0.00702118568341
-    4    -0.54277644683069    -0.01880939886474    -0.00629167855163    -0.00937647986814
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <7| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    2    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    3    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    4    -0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <7| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.19381943937686    -0.05196079719494    -0.00584536798930     0.03953627269110
-    2    -1.18451335286866     0.18815618034032     0.04240487156492     0.12814260749382
-    3    -0.16028333776854    -0.02243702163201    -0.00259886601037     0.01940138805938
-    4    -0.17876257332216     0.42203509032809     0.04855622562826     0.00826212504691
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <7| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    4    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <7| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.04522721939780     0.02214309948498    -0.08357580518613     0.00714968384740
-    2    -0.01320280921444     0.09157067485682     0.06643502495938     0.04109786277243
-    3     0.09119620095805     0.00090587258082    -0.04185796178744    -0.00736669897687
-    4     0.03793799473461    -0.04787264564258     0.40476244005663    -0.00448549367159
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <7| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    2     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    4    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <7| Etu |6> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.32987260863118    -0.04850564517018     0.01803176788340    -0.10376652416440
-    2    -0.28967923796229    -0.66000641225462     0.07862757722881    -0.32861151018038
-    3     0.00300436447753    -0.09840466508979    -0.00049037031815    -0.08715679240851
-    4    -0.01924931529624    -0.04905946300396     0.01305622927869     0.33062417394159
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <7| Etu |7> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.19510474416368     0.18922442631779     0.04251270869145    -0.00197454287891
-    2     0.18922442631779     1.58393127018171     0.21214364609920     0.13116877754449
-    3     0.04251270869145     0.21214364609920     0.04157287784898     0.00446626392252
-    4    -0.00197454287891     0.13116877754449     0.00446626392252     0.17939110780563
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <8| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    2    -0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <8| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.04297605061241    -0.00214333211940     0.00028749380597    -0.00335163776890
-    2     0.11554591777147    -0.01837965766385     0.00113914315500    -0.00549377024947
-    3    -0.92430513969681     0.09805807326762     0.00594144394806     0.10404889431998
-    4     0.32565921814136    -0.00731795976454     0.00346753300279    -0.03053783689662
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <8| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    2    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    3     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    4    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <8| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.11642561021736    -0.01388706525568     0.00222099734437    -0.01120369386008
-    2     0.91952064252281    -0.09774803625154    -0.00639144708421    -0.09183677934438
-    3     0.16577804626648    -0.01123636146760    -0.00732366234696    -0.04419285030640
-    4     0.17547276067855    -0.02537847079829     0.02955039501765    -0.01135391161887
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <8| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <8| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00027779391911     0.00297847772794    -0.00052649988755     0.00093165510874
-    2     0.23585891002143    -0.00333986344436     0.00694432412179     0.00316487863080
-    3     0.09051413483168    -0.00711624708345     0.02486454663685    -0.02018435482707
-    4     0.02959256947466     0.00576780242253    -0.00799230872779    -0.02180247711160
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <8| Etu |6> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    2     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    3    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <8| Etu |7> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    2     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    3    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    4     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <8| Etu |8> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.01574096169683     0.11452049495602    -0.02027162707765     0.03499833230080
-    2     0.11452049495602     0.93252075923150     0.07035175945476     0.21004537862555
-    3    -0.02027162707765     0.07035175945476     0.91227197453972    -0.27189904773254
-    4     0.03499833230080     0.21004537862555    -0.27189904773254     0.13946630453196
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <9| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.02643941909916    -0.00781446272397    -0.00291183570319    -0.00710834477413
-    2    -0.03604173597806     0.00891313002547    -0.01765662956095     0.03331666527922
-    3     0.20565835967044    -0.05321805428563    -0.02060041989178    -0.03745560076639
-    4     0.17375547841068     0.04924467332793     0.01460871242981     0.03812670896546
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <9| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    4    -0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <9| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.01636308829326     0.02962320835114     0.00811462207556    -0.00621240331208
-    2    -0.12014593948902     0.00952642669827     0.01669297675030     0.04429793999845
-    3    -0.76517338736174     0.09552386116135     0.02503977363839     0.08930969027442
-    4     0.55878685494173    -0.30528000905805    -0.04318058138996    -0.05092928862992
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <9| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <9| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.13291858256505     0.02208681969103     0.03724043802560     0.01944592897184
-    2    -0.75315697708482     0.12877363605833    -0.00882537297838     0.09842399261890
-    3    -0.08361206412762     0.07248168281185     0.01412428492319     0.03515622912835
-    4    -0.05054491344360    -0.00530744807305    -0.25024340900685    -0.00997933841647
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <9| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    4    -0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <9| Etu |6> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.11833801298662     0.00672020444115     0.01408744073917     0.02587662313584
-    2     0.50528127895877     0.10732789446004     0.09561981133660    -0.00093131049060
-    3    -0.06932246156782    -0.40101011264002     0.05943137634486    -0.22808715975514
-    4     0.19608113428715     0.30002109640493    -0.03349825510584    -0.04842125781829
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <9| Etu |7> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.04851613049694     0.00573586860214    -0.01927535795996     0.00080674026027
-    2     0.27818661972721     0.06373669932035    -0.03891672701148    -0.01046499088399
-    3     0.17679750659615     1.00403604743799     0.13388186608876     0.07435320160477
-    4    -0.04090546326105    -0.70432032020457    -0.08710757727206    -0.14910243491217
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <9| Etu |8> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    3    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    4    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <9| Etu |9> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.03658798612659     0.02927846996347    -0.00314673026817    -0.00816899173567
-    2     0.02927846996347     0.93470638789654     0.17383098099706     0.05364937098467
-    3    -0.00314673026817     0.17383098099706     0.65913777724126    -0.42888319498207
-    4    -0.00816899173567     0.05364937098467    -0.42888319498207     0.36956784873560
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    3    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    4     0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.08333362017081     0.00769468711894    -0.00067393276525     0.00966032440554
-    2     0.18863588485364    -0.02260257891970    -0.00968703811460    -0.01861100370086
-    3    -0.29786999937488     0.06100358992989     0.00513583672956     0.03787995885299
-    4    -0.91869793220977     0.08863659114086     0.00226065689448     0.10080036236095
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.05644656414685    -0.00878324693514    -0.00356222245274    -0.00864901185630
-    2     0.23464620212458    -0.05343271524784    -0.01469984312196    -0.02220666039665
-    3     0.03868107708728    -0.01286129790886     0.02419248483305    -0.01624056847579
-    4     0.00624057964973     0.00223648960118    -0.01828438686679    -0.02720633373206
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    4     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.10611645733045     0.01114892215872     0.00049952506552     0.01318665056940
-    2    -0.92323292025177     0.09445685616560    -0.01959500788200     0.11495015611736
-    3    -0.18822621633173     0.02282112817842     0.00227128431234    -0.01211181258438
-    4    -0.12573120657844     0.00899335730600     0.02050076954791     0.00938831685252
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |6> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    2    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    3     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    4    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |7> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    3    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    4    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |8> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00317604349320     0.01869159672898     0.07867272067911    -0.02062286826218
-    2     0.03658806100190     0.02707965850158    -0.22403841834846     0.07550876018782
-    3    -0.00818496570504    -0.04115636530123     0.27503380287945    -0.09713437317615
-    4    -0.03894573601418    -0.12958216175844     0.85826518121863    -0.30528950487423
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |9> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    3     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    4    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <10| Etu |10> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.02199701347533     0.09839828829803     0.04817902089788     0.09235342239723
-    2     0.09839828829803     0.96911088328354     0.12674213836186    -0.05664483522852
-    3     0.04817902089788     0.12674213836186     0.13068769972022     0.30699037138074
-    4     0.09235342239723    -0.05664483522852     0.30699037138074     0.87820440352092
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.07823188883932    -0.00537630669255    -0.00382058298418    -0.00301452099700
-    2     0.04368974816069    -0.02130303331503    -0.00571051037104    -0.02731222731771
-    3     0.21998919821592    -0.04659929765213    -0.00869498948049    -0.04626423038731
-    4     0.04074132699617    -0.06417733951038    -0.02327040584233    -0.04823386604380
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    3    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    4    -0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.04451934946872    -0.03485829622111     0.00085223019419     0.00716325538656
-    2     0.31106624397319    -0.03785017763320     0.01398988376433    -0.05574816439269
-    3    -0.49270073657498     0.03539542935114     0.01057511648377     0.04293872229535
-    4    -0.70497885663418     0.21564650410438     0.04350450216725     0.07179441061814
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    3    -0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    4     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.13921302516361     0.03448004840087    -0.03730273483365     0.02134308053148
-    2    -0.55882712060702     0.09693985797365     0.02371597408348     0.07818394515771
-    3     0.18727765376585     0.01643433014245    -0.01119808827693    -0.00499355644899
-    4    -0.21631724738294     0.08072481887866     0.14976255572094     0.05347125546689
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    2     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |6> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.02368799903992    -0.01714608237648     0.01812368598753    -0.05369909869683
-    2    -0.61001379782816     0.11781090761486     0.04101844385359     0.04347860622016
-    3    -0.34634687085051    -0.34044095722102     0.00924296350529    -0.19549613232686
-    4    -0.26603146344193    -0.37272802772741     0.07169898254704    -0.10336587208023
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |7> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.01338653575570     0.07929461404682    -0.00146677732423    -0.01890301915196
-    2    -0.30045458829345    -0.22594736031553    -0.11707411156948    -0.07825420904066
-    3    -0.01946129493217     0.71706479231186     0.10616677356343     0.03985292190792
-    4     0.07547978021513     0.94830398709866     0.09772564064340     0.10639405099640
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |8> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    3     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    4    -0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |9> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.02041935625448     0.10524840046937     0.06057415930076    -0.01737056734931
-    2     0.17458778050201     0.00732110743296    -0.19216560108776     0.09539125249967
-    3     0.00659787762645    -0.26586770208957     0.40923409946136    -0.33464547191051
-    4     0.04814217862237     0.14515996954212     0.60266947054324    -0.43697456314881
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |10> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    4     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <11| Etu |11> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.02666441414219     0.08270241238596     0.01345635032069     0.07473630837839
-    2     0.08270241238596     0.91405717653930    -0.03347996174357     0.05871080001277
-    3     0.01345635032069    -0.03347996174357     0.42634211172396     0.40653999066097
-    4     0.07473630837839     0.05871080001277     0.40653999066097     0.63293629759455
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.05291930900523    -0.00395265232189    -0.00038850074640    -0.00474930293738
-    2     0.05954898656115    -0.01199190827960    -0.00066980121885    -0.01597949486900
-    3    -0.01105315595151    -0.00887262769596    -0.02846712404998     0.02225209396085
-    4     0.06235864029588    -0.00796363831499     0.00426808749094    -0.01246027667566
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    4     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.03639512871620    -0.02004201185171    -0.00167252874622     0.00298474848499
-    2     0.01788344737761    -0.01578048931584     0.00183343271030    -0.01131546366903
-    3    -0.17216812424892     0.03276956877873     0.03345712821702     0.04888062042868
-    4    -0.20702228953980     0.01508548224065    -0.00675221921654     0.01871848981502
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    4    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.02071020208400     0.00366177070803    -0.02313722807752    -0.00071684984360
-    2    -0.02961387544881     0.01342830454197    -0.00595026011464     0.00784455188178
-    3    -1.18132319747997     0.21183395370044     0.01957182451783     0.16118055166179
-    4     0.43915594514736    -0.06161229793917    -0.01339618044807    -0.05371033114380
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    3    -0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |6> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.04429348133264    -0.03206711110374    -0.00049814527470    -0.03767638915459
-    2    -0.23997796520047    -0.03077923753404     0.00109280606554    -0.02661761126124
-    3     0.35591086274637     0.10368062542639     0.14752762710651    -0.01182621295458
-    4    -0.02611562668539    -0.16202304935707    -0.03676430100357    -0.07245490823983
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |7> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00722193223868     0.06304193604752     0.01002937038323    -0.00633068154326
-    2    -0.09960211984359     0.04079159982324    -0.00817989832650    -0.01611860866440
-    3     0.25216325280073     0.18144884773291    -0.07155719780444    -0.02367603454040
-    4     0.02123295238515     0.25640138766349     0.07900909721343     0.03798753021988
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |8> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    3    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    4    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |9> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00166813833247    -0.03645862995618     0.03402372765157    -0.02556497983179
-    2     0.03847254162986    -0.12788607400291    -0.00483247980136    -0.02722580405864
-    3     0.10889969552341     1.19333104395886     0.26368004630801     0.01807201631315
-    4    -0.06444334998167    -0.32489006434781     0.13093612092224    -0.13746211063756
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |10> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    4    -0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |11> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00190901952596     0.00795811888065     0.04366055092556     0.03425290478997
-    2     0.01124782052024     0.20817496445591     0.07842457030385     0.05483158507006
-    3     0.17573752808460     0.35223190165709    -0.26350015979295     0.32401109971512
-    4    -0.05174709934433    -0.31649743635853     0.19993049999799     0.05341617581108
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <12| Etu |12> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00523315277307     0.01184883174556    -0.03560606305987     0.01923746170732
-    2     0.01184883174556     0.07242034621308    -0.07272392897240    -0.01372609083421
-    3    -0.03560606305987    -0.07272392897240     1.67479306015493    -0.50841743561635
-    4     0.01923746170732    -0.01372609083421    -0.50841743561635     0.24755344085892
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    4    -0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.01244491685332     0.00217340839128    -0.00012005508361     0.00226301383523
-    2    -0.00238333229220    -0.00968616154315    -0.00360485322438    -0.00287728109701
-    3     0.04007879050799    -0.01204258498848     0.00722328489122    -0.00566392460953
-    4    -0.03188164113811     0.02061591370813     0.00318510416208     0.01490779350526
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    3     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    4    -0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.07989301609464    -0.01041502997718    -0.00023400039187    -0.00900032773531
-    2    -0.19613136715619     0.01866864433609    -0.01157889641487     0.02080517940674
-    3     0.05856702324850     0.02164988603329     0.00538653382636    -0.00077811839132
-    4     0.96174007028766    -0.11461679620343     0.01118171561340    -0.10394819425708
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    4     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.04397254616498     0.00610440553979    -0.00009000832012     0.00579283449049
-    2    -0.18787099727832     0.01237945768503    -0.00380126856068     0.02651592698785
-    3     0.96567132206069    -0.09320266806439     0.01709838687660    -0.09883867483953
-    4    -0.08540712170336     0.03184417042401     0.00358815480783     0.01449470160335
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |6> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3    -0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |7> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    2    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    3    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |8> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00900864913474     0.06343765911466     0.02160477488360     0.00883962760073
-    2    -0.02339678251026    -0.22866753122066    -0.05026660921101    -0.04168942385274
-    3     0.00824770177213     0.28456421740742     0.06067160634906     0.05367600685494
-    4     0.11333155155688     0.88088546010882     0.19043446878691     0.15898727573686
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |9> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    2    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |10> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.01056637355482     0.05887990227286     0.01564619981239     0.01824488210075
-    2     0.00911008582763     0.13005245853543     0.02741559388755     0.02331954963912
-    3    -0.10521497819008    -0.89128513860083    -0.19325635891734    -0.16145776897042
-    4     0.06876125433119     0.31053104349355     0.06819317981789     0.05263752682708
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |11> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    2    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |12> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    3     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <13| Etu |13> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00874055612309    -0.00755928519079    -0.03966685838760     0.08346570585903
-    2    -0.00755928519079     0.07549802448637    -0.19644890270579    -0.17630010300012
-    3    -0.03966685838760    -0.19644890270579     0.95672463311713    -0.03420447595140
-    4     0.08346570585903    -0.17630010300012    -0.03420447595140     0.95903678627342
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.01200717592090     0.00371379401954     0.00290243076580     0.00104674948685
-    2    -0.03492317277013    -0.00119634780885    -0.00178112436130    -0.00111948910607
-    3    -0.14120471431904     0.04046337764064     0.01163005505617     0.04430324617697
-    4     0.00403657623500    -0.00391349276897     0.01609685859333    -0.02244088316822
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    4    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.03444340130535    -0.01955475128233    -0.00515183267127    -0.00479487705950
-    2     0.11473199516865     0.00485816682293     0.00542963065504    -0.01590625886079
-    3    -0.13650896214602     0.03451569409661    -0.02055910978125     0.03933583226603
-    4    -0.01956688105348     0.02241736162609    -0.01592090024080    -0.01874245834704
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    4    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.09258852688767    -0.01699714317886    -0.01712646835368    -0.01353503081438
-    2    -0.19912030001941     0.02790443030234     0.02358102453316     0.02544395027719
-    3     0.62754878529856    -0.12878289413533    -0.01292821998653    -0.09537262884822
-    4     0.81765079085745    -0.13991586496699     0.01682631930520    -0.10756473720347
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    3     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |6> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00111006248033     0.00556848764822    -0.01303997942744    -0.00469112124189
-    2    -0.09711413379902     0.06727568563797     0.01509043071715     0.04413669220120
-    3     0.74886547603535    -0.00809082581946    -0.05950283880706     0.03594394032689
-    4    -0.26141043351216    -0.14299393004225    -0.09267517455569    -0.00666278435058
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |7> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.01293705539935    -0.04408129944105     0.00322120882792    -0.00525188354164
-    2    -0.06090177384453    -0.11989599913720    -0.04232411413216    -0.01707916365309
-    3     0.30582296200624    -0.04020454688514     0.09123403185969     0.07485021852515
-    4    -0.14701507066629     0.04934932808306     0.07292406848343     0.04159902267685
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |8> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    2     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    3    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    4     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |9> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.01199174806328    -0.08098799330844    -0.03630714868641     0.01622379821869
-    2     0.04568955320690     0.07587115329635    -0.07757449376620     0.05401842300038
-    3    -0.19784262071733    -0.01073301116196     0.03068742572730     0.01853862758962
-    4    -0.07707039823495    -0.80829042455571    -0.06968563082143    -0.09456683096037
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |10> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    2     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    3    -0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |11> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.01494000936319    -0.04000329492375     0.00202916937905    -0.04681274206528
-    2     0.02453694497435     0.23494838076068    -0.06266710612553    -0.01308486129800
-    3    -0.10869739006391    -0.99365110536467    -0.10048648877378    -0.24005340085614
-    4    -0.11455238101971    -0.28573768233798     0.25561573562763    -0.11952188262371
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |12> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00106089924052    -0.00088366598616    -0.12422726332424     0.03557211120909
-    2    -0.00440566662006     0.03841511613302     0.17692849848805    -0.11609229569998
-    3    -0.02193916551646    -0.24538869667142    -0.42077452986394     0.30688806382978
-    4     0.03016475291361     0.04872636685851    -1.13227879023372     0.38129851449040
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |13> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    2    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    3    -0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <14| Etu |14> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.01046113275614    -0.01486113162850     0.05239070008239     0.08073260892106
-    2    -0.01486113162850     0.06966273224341    -0.24248512312380    -0.13847846291946
-    3     0.05239070008239    -0.24248512312380     1.13445260336033     0.30680366462915
-    4     0.08073260892106    -0.13847846291946     0.30680366462915     0.78542353164012
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |0> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.07622997270440     0.00084806774281     0.00062826535429    -0.00090441174453
-    2    -0.04562874852766     0.00332562929907    -0.00107080652743     0.00754322686588
-    3     0.02824991935937    -0.00709362457894    -0.00315478359350    -0.00657185178886
-    4     0.05518094064738    -0.05616588637913    -0.00134610947335    -0.07640081840997
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |1> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    2    -0.00000000000000     0.00000000000000     0.00000000000000     0.00000000000000
-    3     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |2> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.03357463655358    -0.05689977015503    -0.00576036516363    -0.00363555938521
-    2    -0.09409663797908     0.03734680282764     0.00212869783414     0.01684222144540
-    3     0.02305154091527    -0.00909644268371     0.00455721128101    -0.00545713522624
-    4     0.20396134195318     0.05383583475773     0.02208131928337    -0.07547865066224
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |3> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2    -0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    3     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    4     0.00000000000000    -0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |4> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.02181568091811     0.00978966887973    -0.05209936846431     0.00325523430725
-    2     0.04712305474049    -0.01043577503923     0.02115947048164    -0.00691406868510
-    3    -0.16428018629080     0.03236010893253    -0.00057095802182     0.02399402376343
-    4    -0.13661086145667     0.03731914442532     0.11700770537964     0.03282241397915
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |5> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    2    -0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |6> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.03497166646562     0.00702367301980    -0.00060340548650    -0.04363037626904
-    2     0.16766389896247    -0.02179548193931     0.00180313125654     0.01036941643032
-    3    -0.11680123126278     0.00904211743054     0.01668755343806    -0.00847573950910
-    4    -1.21861844959929    -0.07985620190095    -0.00131276740569     0.04007959496687
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |7> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.01675339647868    -0.02019926951240    -0.00448737758994    -0.02667982000452
-    2     0.08799657367108     0.07113685430464     0.02201805413541     0.02756378221943
-    3    -0.04427590681966     0.00774372757609    -0.02032069363802    -0.01647117781260
-    4    -0.55061760560681     0.02345983984697    -0.07320211829042    -0.03406276418793
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |8> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    2    -0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    3     0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    4     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |9> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00788660019743    -0.01034519227260    -0.01575397510817     0.01969612266055
-    2    -0.03282577677046     0.08417877211429     0.06676759460926    -0.02897087096927
-    3     0.04009378547377     0.05419946487588     0.00148446581651     0.00155847887049
-    4     0.20046991019986    -0.68383995501085    -0.14920365865240    -0.09354983812822
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |10> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-    2    -0.00000000000000    -0.00000000000000    -0.00000000000000     0.00000000000000
-    3     0.00000000000000     0.00000000000000     0.00000000000000    -0.00000000000000
-    4     0.00000000000000     0.00000000000000    -0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |11> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00550796647298     0.05274742143314     0.00066181305153    -0.00793657219407
-    2    -0.00789040166376    -0.19237114502345    -0.01019440010932     0.01467593142530
-    3     0.02698604409408     0.19452891923192     0.00318011017714     0.05243999006592
-    4     0.03915368202340     1.09180303851740     0.31688146729152     0.18368306837333
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |12> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00205910870708     0.01402782132669     0.00512341032992    -0.01442170471738
-    2    -0.00496300909989    -0.05499036280749     0.03753766538634     0.03888386175537
-    3     0.00215802171313     0.04061032261735     0.14824467776042    -0.07850254193416
-    4     0.04993103934275     0.36623139584283    -0.41905517349460    -0.09531342366001
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |13> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    2     0.00000000000000     0.00000000000000    -0.00000000000000     0.00000000000000
-    3     0.00000000000000    -0.00000000000000     0.00000000000000     0.00000000000000
-    4    -0.00000000000000    -0.00000000000000     0.00000000000000    -0.00000000000000
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |14> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1    -0.00038525192286     0.01182441107909    -0.05754743322899    -0.00815457189912
-    2     0.00007547400216    -0.04286330479834     0.20627972754571    -0.01298459192994
-    3    -0.01459732029975     0.05170949042789    -0.22160505664392    -0.10511482345045
-    4     0.00017620792718     0.21220364865246    -1.24714919691264     0.26485361336512
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-  ## MO-basis OPDM <15| Etu |15> (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
-
-                 1                   2                   3                   4
-
-    1     0.00608890434585    -0.01358261961060     0.01081326201580     0.06598003994103
-    2    -0.01358261961060     0.04924726072245    -0.03571375242713    -0.28760484046250
-    3     0.01081326201580    -0.03571375242713     0.04620769250504     0.20454087879044
-    4     0.06598003994103    -0.28760484046250     0.20454087879044     1.89845614242666
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
   ## AO Mux (Symmetry 0) ##
   Irrep: 1 Size: 4 x 4
 
@@ -4649,39 +1383,15 @@ Transition Multipole Moments:
 
                  1                   2                   3                   4
 
-    1     1.16542374170630     0.76718918327655     0.06443851075512     0.39664974787813
-    2     0.76718918327655     1.16542374170630    -0.04668651922076     0.16341148479209
-    3     0.06443851075512    -0.04668651922076    -0.29344482714714    -0.18608737356031
-    4     0.39664974787813     0.16341148479209    -0.18608737356031    -0.29344482714714
+    1     0.72943428442672     0.48018078995363    -0.06649052713651     0.16291841013117
+    2     0.48018078995363     0.72943428442672    -0.19241535006026    -0.16208271113832
+    3    -0.06649052713651    -0.19241535006026    -0.72943428442672    -0.46256910197892
+    4     0.16291841013117    -0.16208271113832    -0.46256910197892    -0.72943428442672
 
 
 
-  ## Alpha MO coefficients (Symmetry 0) ##
-  Irrep: 1 Size: 4 x 4
 
-                 1                   2                   3                   4
-
-    1     0.22570756296391     0.37120269232510     1.24177775992044     0.24087275501702
-    2    -0.00302330231399     1.11890016562129    -1.03780148927083    -0.87562338121549
-    3     0.60166135869897    -0.25667369295660     0.08732552594093    -1.17442680027379
-    4     0.37028238307366    -0.79160922884337    -0.20778751681531     1.67841591295588
-
-
-
-  Irrep: 2 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 3 Size: 0 x 0
-
-	(empty)
-
-  Irrep: 4 Size: 0 x 0
-
-	(empty)
-
-
-    Psi4 stopped on: Sunday, 17 August 2025 05:46PM
+    Psi4 stopped on: Thursday, 04 September 2025 10:14AM
     Psi4 wall time for execution: 0:00:00.31
 
 *** Psi4 exiting successfully. Buy a developer a beer!

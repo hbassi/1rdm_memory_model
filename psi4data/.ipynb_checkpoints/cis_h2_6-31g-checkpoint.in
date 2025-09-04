@@ -1,3 +1,5 @@
+memory 1 gb
+
 molecule h2 {
 H  0.       0.      -0.37
 H  0.       0.       0.37
@@ -9,8 +11,8 @@ no_reorient
 set {
     reference rhf
     basis 6-31g
-    ex_level 1
-    calc_s_squared true
+    ms0 false
+    ex_allow [1, 0]
     num_roots 7
     diag_method rsp
     print 2
@@ -19,7 +21,7 @@ set {
     tdm true
 }
 
-thisenergy, ciwfn = prop('detci', properties=['DIPOLE', 'TRANSITION_DIPOLE'], return_wfn=True)
+thisenergy, ciwfn = prop('cisd', properties=['DIPOLE', 'TRANSITION_DIPOLE'], return_wfn=True)
 
 for i in range(7):
     for j in range(i+1):

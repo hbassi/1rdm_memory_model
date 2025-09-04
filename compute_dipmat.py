@@ -125,6 +125,8 @@ dipX = datafile.get_dipole_x_AO()
 dipY = datafile.get_dipole_y_AO()
 dipZ = datafile.get_dipole_z_AO()
 
+print(dipZ)
+
 # specific to CASSCF calculation
 MO = np.zeros([NMOs,NMOs], np.float64)
 

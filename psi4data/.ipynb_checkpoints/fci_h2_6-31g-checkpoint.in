@@ -23,20 +23,42 @@ set {
 
 thisenergy, ciwfn = prop('detci', properties=['DIPOLE', 'TRANSITION_DIPOLE'], return_wfn=True)
 
-for i in range(16):
-    for j in range(i+1):
-        ciop_dm = ciwfn.get_opdm(i,j,'SUM',True)
-        ciop_dm.print_out()
-
 mints = MintsHelper(ciwfn.basisset())
 
 AOdip = mints.ao_dipole()
+
+print("*******************")
+print("AOdip[0].print_out():")
 AOdip[0].print_out()
+print("*******************")
+print("AOdip[1].print_out():")
 AOdip[1].print_out()
+print("*******************")
+print("AOdip[2].print_out():")
 AOdip[2].print_out()
 
-ciwfn.Ca().print_out()               # Print orbital information
+# MO coefficients
+print("*******************")
+print("MO coefficients:")
+C = ciwfn.Ca().to_array()
+print(C)
 
+# dipole moment matrix in z direction
+AOdipmat = AOdip[2].to_array()
 
+# initialize CI dipole moment matrix in z direction
+CIdimatz = np.zeros((16,16))
+for i in range(16):
+    for j in range(16):
+        ciop_dm = ciwfn.get_opdm(i,j,'SUM',True)
+        # density matrix: change basis from MO to AO
+        dmAO = C @ ciop_dm.to_array() @ C.T
+        # compute this particular density matrix element
+        CIdimatz[i, j] = np.trace( dmAO @ AOdipmat )
+
+print(np.round(CIdimatz, 8))
+
+CIdimatfile = np.load('../logfiles/casscf24_s15_h2_6-31g_CI_dimat.npz')
+print(CIdimatfile)
 
 
