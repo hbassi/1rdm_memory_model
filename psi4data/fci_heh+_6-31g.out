@@ -31,10 +31,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 04 September 2025 10:14AM
+    Psi4 started on: Saturday, 13 September 2025 11:53AM
 
-    Process ID: 3457832
-    Host:       node046.cluster
+    Process ID: 1945023
+    Host:       gnode010.cluster
     PSIDATADIR: /home/hbhat/psi4conda/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -71,40 +71,62 @@ thisenergy, ciwfn = prop('detci', properties=['DIPOLE', 'TRANSITION_DIPOLE'], re
 mints = MintsHelper(ciwfn.basisset())
 
 AOdip = mints.ao_dipole()
-
-print("*******************")
-print("AOdip[0].print_out():")
 AOdip[0].print_out()
-print("*******************")
-print("AOdip[1].print_out():")
 AOdip[1].print_out()
-print("*******************")
-print("AOdip[2].print_out():")
 AOdip[2].print_out()
 
 # MO coefficients
-print("*******************")
-print("MO coefficients:")
 C = ciwfn.Ca().to_array()
-print(C)
 
-# dipole moment matrix in z direction
+# overlap matrix
+S = ciwfn.S().to_array()
+
+print("Overlap test:")
+n = S.shape[0]
+print(np.mean(np.abs(C.T @ S @ C - np.eye(n))))
+
+# z-direction AO dipole moment matrix
 AOdipmat = AOdip[2].to_array()
+MOdipmat = C.T @ AOdipmat @ C
+
+# set CI size
+cisize = 16
 
 # initialize CI dipole moment matrix in z direction
-CIdimatz = np.zeros((16,16))
-for i in range(16):
-    for j in range(16):
+CIdimatzMO = np.zeros((cisize,cisize))
+CIdimatzAO = np.zeros((cisize,cisize))
+# initialize B tensor
+Bten = np.zeros((cisize, cisize, n, n))
+for i in range(cisize):
+    for j in range(cisize):
         ciop_dm = ciwfn.get_opdm(i,j,'SUM',True)
+        # store this in Bten
+        Bten[i,j,:,:] = ciop_dm.to_array()
         # density matrix: change basis from MO to AO
         dmAO = C @ ciop_dm.to_array() @ C.T
         # compute this particular density matrix element
-        CIdimatz[i, j] = np.trace( dmAO @ AOdipmat )
+        CIdimatzMO[i, j] = np.trace( ciop_dm.to_array() @ MOdipmat )
+        CIdimatzAO[i, j] = np.trace( dmAO @ AOdipmat )
 
-print(np.round(CIdimatz, 8))
+print("Difference between CI basis dipole moment matrices computed via AO vs MO:")
+print(np.mean(np.abs(CIdimatzMO - CIdimatzAO)))
 
 CIdimatfile = np.load('../logfiles/casscf24_s15_heh+_6-31g_CI_dimat.npz')
-print(CIdimatfile)
+print("Difference between new and old CI basis dipole moment matrices:")
+print(np.mean(np.abs(CIdimatfile - CIdimatzMO)))
+
+print("Difference between **diagonals** of new and old CI basis dipole moment matrices:")
+print(np.mean(np.abs(np.diag(CIdimatfile - CIdimatzMO))))
+
+# reshape OPDMs into B tensor
+
+np.savez('./fci_heh+_6-31g.npz',C=C,S=S,AOdipmat=AOdipmat,CIdimatz=CIdimatzMO,Bten=Bten)
+
+# for debugging purposes:
+# Bmat = Bten.reshape((cisize**2, n**2))
+# Bmat[np.abs(Bmat) < 1e-14] = 0.0
+# print(Bmat)
+
 
 
 --------------------------------------------------------------------------
@@ -117,8 +139,8 @@ print(CIdimatfile)
     Onebody   basis highest AM E, G, H:  -, -, -
     Solid Harmonics ordering:            Gaussian
 
-*** tstart() called on node046.cluster
-*** at Thu Sep  4 10:14:22 2025
+*** tstart() called on gnode010.cluster
+*** at Sat Sep 13 11:53:54 2025
 
    => Loading Basis Set <=
 
@@ -299,15 +321,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on node046.cluster at Thu Sep  4 10:14:22 2025
+*** tstop() called on gnode010.cluster at Sat Sep 13 11:53:55 2025
 Module time:
 	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
 	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -1391,7 +1413,7 @@ Transition Multipole Moments:
 
 
 
-    Psi4 stopped on: Thursday, 04 September 2025 10:14AM
-    Psi4 wall time for execution: 0:00:00.31
+    Psi4 stopped on: Saturday, 13 September 2025 11:53AM
+    Psi4 wall time for execution: 0:00:00.33
 
 *** Psi4 exiting successfully. Buy a developer a beer!
