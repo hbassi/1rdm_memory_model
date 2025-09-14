@@ -48,6 +48,16 @@ MOdipmat = C.T @ AOdipmat @ C
 # set CI size
 cisize = 16
 
+# grab the Hamiltonian
+test = psi4.core.variables()
+ham = []
+for j in range(cisize):
+    ham.append( test['CI ROOT '+str(j)+' TOTAL ENERGY'] )
+ham = np.array(ham)
+
+print("Diagonalized Hamiltonian:")
+print(ham)
+
 # initialize CI dipole moment matrix in z direction
 CIdimatzMO = np.zeros((cisize,cisize))
 CIdimatzAO = np.zeros((cisize,cisize))
@@ -76,7 +86,7 @@ print(np.mean(np.abs(np.diag(CIdimatfile - CIdimatzMO))))
 
 # reshape OPDMs into B tensor
 
-np.savez('./fci_heh+_6-31g.npz',C=C,S=S,AOdipmat=AOdipmat,CIdimatz=CIdimatzMO,Bten=Bten)
+np.savez('./fci_heh+_6-31g.npz',C=C,S=S,AOdipmat=AOdipmat,CIdimatz=CIdimatzMO,Bten=Bten,ham=ham)
 
 # for debugging purposes:
 # Bmat = Bten.reshape((cisize**2, n**2))

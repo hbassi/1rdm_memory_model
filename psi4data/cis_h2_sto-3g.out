@@ -31,9 +31,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 13 September 2025 11:56AM
+    Psi4 started on: Saturday, 13 September 2025 05:00PM
 
-    Process ID: 1945376
+    Process ID: 1951331
     Host:       gnode010.cluster
     PSIDATADIR: /home/hbhat/psi4conda/share/psi4
     Memory:     500.0 MiB
@@ -91,6 +91,16 @@ MOdipmat = C.T @ AOdipmat @ C
 # set CI size
 cisize = 3
 
+# grab the Hamiltonian
+test = psi4.core.variables()
+ham = []
+for j in range(cisize):
+    ham.append( test['CI ROOT '+str(j)+' TOTAL ENERGY'] )
+ham = np.array(ham)
+
+print("Diagonalized Hamiltonian:")
+print(ham)
+
 # initialize CI dipole moment matrix in z direction
 CIdimatzMO = np.zeros((cisize,cisize))
 CIdimatzAO = np.zeros((cisize,cisize))
@@ -112,7 +122,7 @@ print(np.mean(np.abs(CIdimatzMO - CIdimatzAO)))
 
 # reshape OPDMs into B tensor
 
-np.savez('./cis_h2_sto-3g.npz',C=C,S=S,AOdipmat=AOdipmat,CIdimatz=CIdimatzMO,Bten=Bten)
+np.savez('./cis_h2_sto-3g.npz',C=C,S=S,AOdipmat=AOdipmat,CIdimatz=CIdimatzMO,Bten=Bten,ham=ham)
 
 # for debugging purposes:
 # Bmat = Bten.reshape((cisize**2, n**2))
@@ -129,7 +139,7 @@ np.savez('./cis_h2_sto-3g.npz',C=C,S=S,AOdipmat=AOdipmat,CIdimatz=CIdimatzMO,Bte
     Solid Harmonics ordering:            Gaussian
 
 *** tstart() called on gnode010.cluster
-*** at Sat Sep 13 11:56:45 2025
+*** at Sat Sep 13 17:00:36 2025
 
    => Loading Basis Set <=
 
@@ -304,7 +314,7 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on gnode010.cluster at Sat Sep 13 11:56:45 2025
+*** tstop() called on gnode010.cluster at Sat Sep 13 17:00:36 2025
 Module time:
 	user time   =       0.08 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
@@ -631,7 +641,7 @@ Transition Multipole Moments:
 
 
 
-    Psi4 stopped on: Saturday, 13 September 2025 11:56AM
-    Psi4 wall time for execution: 0:00:00.19
+    Psi4 stopped on: Saturday, 13 September 2025 05:00PM
+    Psi4 wall time for execution: 0:00:00.21
 
 *** Psi4 exiting successfully. Buy a developer a beer!
